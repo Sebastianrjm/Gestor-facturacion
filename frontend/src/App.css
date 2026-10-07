@@ -20,3 +20,25 @@ input:-webkit-autofill:active {
   /* Borde personalizado */
   border: 1px solid #0099FF !important;
 }
+
+.title {
+  margin-bottom: 1.5rem;
+  text-align: start;
+  color: #172338;
+  font-size: 30px;
+  font-weight: bold;
+  line-height: 1.2em;
+  letter-spacing: -0.04em;
+}
+
+.subtitle {
+  color: #748094;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.5em;
+  text-align: start;
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}

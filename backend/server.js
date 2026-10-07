@@ -30,6 +30,9 @@ app.get('/api/v1/health', async (req, res) => {
     res.status(500).json({ status: 'ERROR', message: 'Error al conectar a la base de datos', error: error.message });
   }
 });
+app.get('/api/ping', (req, res) => {
+  res.send('pong');
+});
 
 // Iniciar servidor
 app.listen(PORT, () => {

@@ -1,94 +1,99 @@
-import react from 'react';
+import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import "../assets/Sidebar.css" 
+import { useAuth } from '../context/AuthContext';
+import "../assets/Sidebar.css"
 
 export default function DashboardLayout() {
-    const navigate = useNavigate();
-    // Se recupera la informacion del usuario del login
-    const storedUser = localStorage.getItem('user');
-    const user = storedUser ? JSON.parse(storedUser) : null;
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-    };
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
-    return (
-        <div style={styles.container}>
-            {/* Sidebar / Menú Lateral */}
-            <aside style={styles.sidebar}>
-              <div style={styles.brand}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Folio.</h2>
-              </div>
-              <nav style={styles.nav}>
-                <NavLink to="/dashboard" className={({ isActive }) =>`nav-item-link ${isActive ? 'active' : ''}`}>
-                    Mis facturas
-                </NavLink>
-                <NavLink to="/dashboard/perfil" className={({ isActive }) =>`nav-item-link ${isActive ? 'active' : ''}`}> 
-                    Mi perfil
-                </NavLink>
-              </nav>
-              {/* Contenedor del botón alineado abajo y centrado */}
-              <div style={styles.logoutContainer}>
-                <button onClick={handleLogout} className="nav-item-link" style={{ color: '#ef4444' }}>
-                  Cerrar Sesión
-                </button>
-              </div>
-            </aside>
-
-            {/* Área Principal */}
-            <div style={styles.mainArea}>
-
-                {/* Contenido Dinámico según la ruta activa */}
-                <main style={styles.content}>
-                <Outlet />
-                </main>
-            </div>
+  return (
+    <div style={styles.container}>
+      {/* Sidebar */}
+      <aside style={styles.sidebar}>
+        <div style={styles.brand}>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#172338' }}>Folio.</h2>
+          {user && (
+            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#748094' }}>
+              {user.nombre}
+            </p>
+          )}
         </div>
-    )
+
+        <nav style={styles.nav}>
+          <NavLink 
+            to="/dashboard" 
+            end
+            className={({ isActive }) => 
+              `nav-item-link ${isActive ? 'active' : ''}`
+            }
+          >
+            Mis facturas
+          </NavLink>
+
+          <NavLink 
+            to="/dashboard/perfil"
+            className={({ isActive }) => 
+              `nav-item-link ${isActive ? 'active' : ''}`
+            }
+          > 
+            Mi perfil
+          </NavLink>
+        </nav>
+
+        <div style={styles.logoutContainer}>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      {/* Área Principal con Scroll habilitado y dimensión forzada */}
+      <div style={styles.mainArea}>
+        <main style={styles.content}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
     display: 'flex',
+    width: '100vw',
+    height: '100vh',
     minHeight: '100vh',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F4F6FA',
+    overflow: 'hidden',
   },
   sidebar: {
-    width: '216px', 
+    width: '240px', 
+    minWidth: '240px',
     backgroundColor: '#FFFFFF',
-    color: '#748094',
     display: 'flex',
     flexDirection: 'column',
     borderRight: '1px solid #e2e8f0', 
+    height: '100vh',
   },
   brand: {
     padding: '1.5rem',
+    borderBottom: '1px solid #f1f5f9',
   },
   nav: {
     display: 'flex',
     flexDirection: 'column',
     padding: '1rem',
-     gap: "24px"
-  },
-  navItem: {
-    textAlign: 'start',
-    fontSize: "14px",
-    lineHeight: "1.5em",
-    letterSpacing: "-0.02em",
-    color: "#172338",
-    fontStyle: "italic",
-    fontWeight: "400",
-    textDecoration: 'none',
-    padding: '12px 16px',
+    gap: '8px',
   },
   logoutContainer: {
     marginTop: 'auto',
     padding: '1.5rem 1rem',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   logoutButton: {
     backgroundColor: '#ef4444',
@@ -98,17 +103,17 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontWeight: '500',
-    width: '100%', // Opcional: hace que el botón ocupe todo el ancho disponible
+    width: '100%',
     textAlign: 'center',
   },
   mainArea: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
+    height: '100vh',
+    overflowY: 'auto',
     backgroundColor: '#F4F6FA',
   },
   content: {
     padding: '2rem',
-    flex: 1,
-  }
+    minHeight: '100%',
+  },
 };

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import type { ChangeEvent, FormEvent, CSSProperties } from 'react';
-import { loginUser } from '../services/authService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { LoginCredentials, User } from '../types/auth';
 import InputField from '../components/inputField';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 interface LoginProps {
   onLoginSuccess?: (user: User) => void;
@@ -12,6 +12,8 @@ interface LoginProps {
 
 export default function Login({ onLoginSuccess }: LoginProps) {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
     password: '',
@@ -26,25 +28,35 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const response = await loginUser(formData);
-      
-      // 2. Guardar el token devuelto por tu backend
-      localStorage.setItem('token', response.token);
-      if (response.user) {
-        localStorage.setItem('user', JSON.stringify(response.user));
+      // 1. Enviamos formData.email y formData.password
+      const response = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      const { token, user } = response.data;
+
+      // 2. Pasamos token y user como 2 argumentos requeridos por AuthContext
+      login(token, user);
+
+      if (onLoginSuccess) {
+        onLoginSuccess(user);
       }
 
-      // 3. Redirigir al usuario al Dashboard
-      navigate('/dashboard'); 
-
+      // 3. Redirección limpia al dashboard
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+      console.error('Error al iniciar sesión:', err);
+      const msg = err.response?.data?.message || 'Error al conectar con el servidor';
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +65,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       <form onSubmit={handleSubmit} style={styles.form}>
         <h1 style={styles.title}>Bienvenido de nuevo</h1>
         <p style={{ ...styles.subtitle, ...styles.text }}>
-            Tu facturación, en orden. Accede a tu espacio de trabajo.
+          Tu facturación, en orden. Accede a tu espacio de trabajo.
         </p>
 
         {error && <div style={styles.errorMessage}>{error}</div>}
@@ -82,7 +94,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           {loading ? 'Ingresando...' : 'Entrar'}
         </button>
 
-        {/* Enlace para ir al Registro */}
         <div style={styles.footerText}>
           <span>¿No tienes una cuenta? </span>
           <Link to="/register" style={styles.link}>
@@ -101,35 +112,37 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     minHeight: '100vh',
     backgroundColor: '#f4f6f8',
+    width: '100%',
   },
   form: {
     width: '100%',
     maxWidth: '380px',
     padding: '40px',
     backgroundColor: '#ffffff',
-    gap: '24px',
+    display: 'flex',
+    flexDirection: 'column',
     borderRadius: '16px',
     border: '1px solid #E4E8EF',
-    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.04)', 
+    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.04)',
   },
   title: {
-    marginBottom: '1.5rem',
+    marginBottom: '0.5rem',
     textAlign: 'start',
     color: '#172338',
     fontSize: '30px',
-    fontWeight: "bold",
-    lineHeight: "1.2em",
-    letterSpacing: "-0.04em"
+    fontWeight: 'bold',
+    lineHeight: '1.2em',
+    letterSpacing: '-0.04em',
   },
   subtitle: {
-    color: "#748094",
+    color: '#748094',
   },
   text: {
-    fontSize: "14px",
-    lineHeight: "1.5em",
-    textAlign: "start",
+    fontSize: '14px',
+    lineHeight: '1.5em',
+    textAlign: 'start',
     marginBottom: '1.5rem',
-    fontWeight: "300",
+    fontWeight: '300',
   },
   button: {
     width: '100%',
@@ -148,7 +161,7 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: '1rem',
     backgroundColor: '#f8d7da',
     color: '#721c24',
-    borderRadius: '4px',
+    borderRadius: '6px',
     fontSize: '0.9rem',
     textAlign: 'center',
   },
@@ -159,7 +172,7 @@ const styles: Record<string, CSSProperties> = {
     color: '#64748b',
   },
   link: {
-    color: '#007bff',
+    color: '#265CF0',
     fontWeight: '600',
     textDecoration: 'none',
   },
