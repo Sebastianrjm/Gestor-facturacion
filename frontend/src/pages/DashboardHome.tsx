@@ -3,7 +3,7 @@ import react from "react"
 export default function DashboardHome() {
     return (
         <div>
-        <h1 style={{ marginBottom: '1.5rem', color: '#0f172a' }}>Panel de Control</h1>
+        <h1 style={{ marginBottom: '1.5rem', color: '#0f172a' }}>Mis facturas</h1>
 
         {/* Tarjetas de Resumen */}
             <div style={styles.grid}>

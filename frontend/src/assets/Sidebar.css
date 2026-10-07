@@ -1,0 +1,29 @@
+/* Estilo base para los ítems de navegación */
+.nav-item-link {
+    text-align: start;
+    font-size: 14px;
+    line-height: 1.5em;
+    letter-spacing: -0.02em;
+    color: #172338;
+    font-style: italic;
+    font-weight: 400;
+    text-decoration: none;
+    padding: 12px 16px;
+    background-color: #FFFFFF;
+    border: 0;
+    cursor: pointer;
+}
+
+/* Efecto Hover: aplica sombra suave al pasar el cursor */
+.nav-item-link:hover {
+  background-color: #EDF2FF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+/* Estado Activo: aplica la sombra fija cuando estás en esa ruta */
+.nav-item-link.active {
+  background-color: #EDF2FF;
+  font-weight: 500;
+  border-radius: 8px;
+}

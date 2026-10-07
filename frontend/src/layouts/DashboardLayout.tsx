@@ -1,5 +1,6 @@
 import react from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import "../assets/Sidebar.css" 
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
@@ -18,19 +19,19 @@ export default function DashboardLayout() {
             {/* Sidebar / Menú Lateral */}
             <aside style={styles.sidebar}>
               <div style={styles.brand}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem' }}>TuNegocio</h2>
+                <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Folio.</h2>
               </div>
               <nav style={styles.nav}>
-                <Link to="/dashboard" style={styles.navItem}>
+                <NavLink to="/dashboard" className={({ isActive }) =>`nav-item-link ${isActive ? 'active' : ''}`}>
                     Mis facturas
-                </Link>
-                <Link to="/dashboard/perfil" style={styles.navItem}>
+                </NavLink>
+                <NavLink to="/dashboard/perfil" className={({ isActive }) =>`nav-item-link ${isActive ? 'active' : ''}`}> 
                     Mi perfil
-                </Link>
+                </NavLink>
               </nav>
               {/* Contenedor del botón alineado abajo y centrado */}
               <div style={styles.logoutContainer}>
-                <button onClick={handleLogout} style={styles.logoutButton}>
+                <button onClick={handleLogout} className="nav-item-link" style={{ color: '#ef4444' }}>
                   Cerrar Sesión
                 </button>
               </div>
@@ -64,13 +65,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   brand: {
     padding: '1.5rem',
-    borderBottom: '1px solid #e2e8f0',
   },
   nav: {
     display: 'flex',
     flexDirection: 'column',
     padding: '1rem',
-    gap: '0.5rem',
+     gap: "24px"
   },
   navItem: {
     textAlign: 'start',
@@ -79,7 +79,9 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: "-0.02em",
     color: "#172338",
     fontStyle: "italic",
-    fontWeight: "200",
+    fontWeight: "400",
+    textDecoration: 'none',
+    padding: '12px 16px',
   },
   logoutContainer: {
     marginTop: 'auto',
@@ -105,17 +107,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     backgroundColor: '#F4F6FA',
   },
-  header: {
-    height: '64px',
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 2rem',
-  },
   content: {
     padding: '2rem',
     flex: 1,
-  },
+  }
 };
