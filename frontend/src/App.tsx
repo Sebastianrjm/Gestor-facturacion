@@ -1,28 +1,29 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import type { User } from './types/auth';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import './App.css'; 
+import ProtectedRoute from './components/ProtectedRoute';
+import DashboardLayout from './layouts/DashboardLayout';
+import DashboardHome from './pages/DashboardHome';
+import "./app.css"
 
 export default function App() {
-  const handleLoginSuccess = (user: User) => {
-    console.log('Usuario autenticado con éxito:', user);
-    // Próximamente: redirigir al Dashboard
-  };
-
   return (
     <BrowserRouter>
-      <div style={styles.appLayout}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route 
-            path="/login" 
-            element={<Login onLoginSuccess={handleLoginSuccess} />} 
-          />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Rutas Públicas */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Rutas Protegidas por JWT */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            {/* Aquí agregarás luego: /dashboard/cotizaciones, /dashboard/clientes, etc. */}
+          </Route>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

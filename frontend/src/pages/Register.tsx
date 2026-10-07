@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent, CSSProperties } from 'react';
 import { registerUser } from '../services/authService';
 import { Link } from 'react-router-dom';
 import type { RegisterCredentials, User } from '../types/auth';
+import InputField from '../components/inputField';
 
 interface RegisterProps {
   onRegisterSuccess?: (user: User) => void;
@@ -57,94 +58,64 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
         {error && <div style={styles.errorMessage}>{error}</div>}
 
         <h2 style={styles.subtitle}>Datos de inicio de sesión</h2>
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Correo Electrónico
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="nombre@empresa.com"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Correo Electrónico"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="nombre@empresa.com"
+          required
+        />
 
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Contraseña
-          </label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Contraseña"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Contraseña"
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Contraseña"
+          required
+        />
 
         <h2 style={styles.subtitle}>Datos de la empresa</h2>
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Razón Social
-          </label>
-          <input
-            type="text"
-            name="razonSocial"
-            value={formData.razonSocial}
-            onChange={handleChange}
-            placeholder="Razón Social"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Razón Social"
+          type="text"
+          name="razonSocial"
+          value={formData.razonSocial}
+          onChange={handleChange}
+          placeholder="Razón Social"
+          required
+        />
 
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Identificación Fiscal
-          </label>
-          <input
-            type="text"
-            name="identificacionFiscal"
-            value={formData.identificacionFiscal}
-            onChange={handleChange}
-            placeholder="Identificación Fiscal"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Identificación Fiscal"
+          type="text"
+          name="identificacionFiscal"
+          value={formData.identificacionFiscal}
+          onChange={handleChange}
+          placeholder="Identificación Fiscal"
+          required
+        />
 
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Nombre de la persona encargada 
-          </label>
-          <input
-            type="text"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            placeholder="Pedro Perez"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
-
+        <InputField
+          label="Nombre de la persona encargada"
+          type="text"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          placeholder="Nombre de la persona encargada"
+          required
+        />
+        
         <button type="submit" disabled={loading} style={styles.button}>
           {loading ? 'Registrando...' : 'Registrarse'}
         </button>
 
         {/* Enlace para ir al Registro */}
         <div style={styles.footerText}>
-          <span>¿No tienes una cuenta? </span>
+          <span>¿Ya tienes una cuenta? </span>
           <Link to="/login" style={styles.link}>
             Inicia sesión aquí
           </Link>
@@ -195,26 +166,6 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "start",
     marginBottom: '1.5rem',
     fontWeight: "300",
-  },
-  inputGroup: {
-    marginBottom: '1.25rem',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    color: '#000000',
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '14px',
-    lineHeight: '1.2em',
-    borderRadius: '8px',
-    border: '1px solid #DCE2EC',
-    boxSizing: 'border-box',
-    backgroundColor: 'rgba(187, 187, 187, 0.15)',
-    height: '46px',
-    color: '#999999'
   },
   button: {
     width: '100%',

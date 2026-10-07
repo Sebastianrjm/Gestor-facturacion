@@ -3,12 +3,15 @@ import type { ChangeEvent, FormEvent, CSSProperties } from 'react';
 import { loginUser } from '../services/authService';
 import { Link } from 'react-router-dom';
 import type { LoginCredentials, User } from '../types/auth';
+import InputField from '../components/inputField';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginProps {
   onLoginSuccess?: (user: User) => void;
 }
 
 export default function Login({ onLoginSuccess }: LoginProps) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
     password: '',
@@ -29,17 +32,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setLoading(true);
 
     try {
-      const data = await loginUser(formData);
-      setLoading(false);
+      const response = await loginUser(formData);
       
-      if (onLoginSuccess) {
-        onLoginSuccess(data.user);
+      // 2. Guardar el token devuelto por tu backend
+      localStorage.setItem('token', response.token);
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
       }
+
+      // 3. Redirigir al usuario al Dashboard
+      navigate('/dashboard'); 
+
     } catch (err: any) {
-      setLoading(false);
-      setError(
-        err.response?.data?.error || 'Ocurrió un error al intentar iniciar sesión.'
-      );
+      setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
   };
 
@@ -53,37 +58,25 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
         {error && <div style={styles.errorMessage}>{error}</div>}
 
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Correo Electrónico
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="nombre@empresa.com"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Correo Electrónico"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="nombre@empresa.com"
+          required
+        />
 
-        <div style={styles.inputGroup}>
-          <label style={{...styles.text, ...styles.label}}>
-            Contraseña
-          </label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Contraseña"
-            required
-            style={styles.input}
-            className="custom-input"
-          />
-        </div>
+        <InputField
+          label="Contraseña"
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Contraseña"
+          required
+        />
 
         <button type="submit" disabled={loading} style={styles.button}>
           {loading ? 'Ingresando...' : 'Entrar'}
@@ -137,26 +130,6 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "start",
     marginBottom: '1.5rem',
     fontWeight: "300",
-  },
-  inputGroup: {
-    marginBottom: '1.25rem',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    color: '#000000',
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '14px',
-    lineHeight: '1.2em',
-    borderRadius: '8px',
-    border: '1px solid #DCE2EC',
-    boxSizing: 'border-box',
-    backgroundColor: 'rgba(187, 187, 187, 0.15)',
-    height: '46px',
-    color: '#999999'
   },
   button: {
     width: '100%',
