@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  /* Mantiene el color del texto personalizado */
+  -webkit-text-fill-color: #000 !important;
+  
+  /* Retrasa la aplicación del fondo amarillo/azul del navegador por 9999 horas */
+  transition: background-color 99999s ease-in-out 0s;
+  
+  /* Borde personalizado */
+  border: 1px solid #0099FF !important;
+}
