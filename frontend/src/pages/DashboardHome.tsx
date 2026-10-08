@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import API from '../services/api';
+import React, { useState } from 'react';
 import { Button } from '../components/Button';
+// import API from '../services/api'; // Comentado temporalmente
 
 export default function DashboardHome() {
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  /*
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -25,6 +26,7 @@ export default function DashboardHome() {
 
     fetchDashboardData();
   }, []);
+  */
 
    //1. Manejo visible de la carga (evita devolver null)
   if (loading) {
@@ -47,28 +49,29 @@ export default function DashboardHome() {
 
   // 3. Renderizado de tus pantallas/tarjetas reales
   return (
-        <div>
-        <h1 className="title">Mis facturas</h1>
+    <div>
+      <h1 className="title">Mis facturas</h1>
 
-        <Button variant="primary" onClick={() => console.log('Guardar')}>
-            Guardar Factura
-        </Button>
-        {/* Tarjetas de Resumen */}
-            <div style={styles.grid}>
-                <div style={styles.card}>
-                <span style={styles.cardTitle}>Cotizaciones Emitidas</span>
-                <h2 style={styles.cardValue}>12</h2>
-                </div>
-                <div style={styles.card}>
-                <span style={styles.cardTitle}>Monto Total ($)</span>
-                <h2 style={styles.cardValue}>$ 4,520.00</h2>
-                </div>
-                <div style={styles.card}>
-                <span style={styles.cardTitle}>Clientes Activos</span>
-                <h2 style={styles.cardValue}>8</h2>
-                </div>
-            </div>
+      <Button variant="primary" onClick={() => console.log('Guardar')}>
+        Nueva factura
+      </Button>
+
+      {/* Tarjetas de Resumen */}
+      <div style={styles.grid}>
+        <div style={styles.card}>
+          <span style={styles.cardTitle}>Cotizaciones Emitidas</span>
+          <h2 style={styles.cardValue}>12</h2>
         </div>
+        <div style={styles.card}>
+          <span style={styles.cardTitle}>Monto Total ($)</span>
+          <h2 style={styles.cardValue}>$ 4,520.00</h2>
+        </div>
+        <div style={styles.card}>
+          <span style={styles.cardTitle}>Clientes Activos</span>
+          <h2 style={styles.cardValue}>8</h2>
+        </div>
+      </div>
+    </div>
   );
 }
 

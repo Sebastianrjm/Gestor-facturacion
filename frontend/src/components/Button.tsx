@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 
-// Definimos la interfaz extendiendo las props nativas de un botón HTML
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary';
   children: React.ReactNode;
@@ -16,12 +15,12 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Estilos base compartidos por ambas variantes
   const baseStyle: CSSProperties = {
-    padding: '0.625rem 1.25rem',
+    padding: '12px 20px',
     borderRadius: '8px',
-    fontSize: '0.95rem',
-    fontWeight: '500',
+    fontSize: '14px',
+    lineHeight: "1.2em",
+    fontWeight: '600',
     border: '1px solid transparent',
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'all 0.2s ease-in-out',
@@ -33,17 +32,15 @@ export const Button: React.FC<ButtonProps> = ({
     outline: 'none',
   };
 
-  // Estilos especificos por variante (Incluyendo el hover)
-
   const variantStyles: Record<'primary' | 'secondary', CSSProperties> = {
     primary: {
-      backgroundColor: isHovered && !disabled ? '#0284c7' : '#0ea5e9', // Azul principal / Hover más oscuro
+      backgroundColor: isHovered && !disabled ? '#3b6cf1' : '#265CF0',
       color: '#ffffff',
       borderColor: 'transparent',
       boxShadow: isHovered && !disabled ? '0 4px 12px rgba(14, 165, 233, 0.25)' : 'none',
     },
     secondary: {
-      backgroundColor: isHovered && !disabled ? '#f1f5f9' : '#ffffff', // Fondo claro / Hover gris suave
+      backgroundColor: isHovered && !disabled ? '#f1f5f9' : '#ffffff',
       color: '#0f172a',
       borderColor: '#e2e8f0',
       boxShadow: isHovered && !disabled ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
@@ -57,7 +54,8 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <Button
+    // 👈 Cambiado de <Button> a <button> para renderizar el elemento HTML real
+    <button
       style={combinedStyles}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -65,6 +63,6 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {children}
-    </Button>
+    </button>
   );
 };
