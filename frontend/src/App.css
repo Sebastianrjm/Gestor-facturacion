@@ -22,7 +22,6 @@ input:-webkit-autofill:active {
 }
 
 .title {
-  margin-bottom: 1.5rem;
   text-align: start;
   color: #172338;
   font-size: 30px;
@@ -39,6 +38,6 @@ input:-webkit-autofill:active {
   font-size: 14px;
   line-height: 1.5em;
   text-align: start;
-  margin-bottom: 1.5rem;
   font-weight: 300;
+  color: #172338
 }

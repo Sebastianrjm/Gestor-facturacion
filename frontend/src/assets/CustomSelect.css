@@ -1,0 +1,9 @@
+.custom-select-container .custom-select-label {
+  display: block !important;
+  font-size: 14px !important;
+  line-height: 1.5em !important;
+  text-align: left !important;
+  font-weight: 300 !important;
+  color: #172338 !important;
+  margin: 0 0 4px 0 !important;
+}

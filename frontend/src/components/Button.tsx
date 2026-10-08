@@ -30,6 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
     gap: '0.5rem',
     opacity: disabled ? 0.6 : 1,
     outline: 'none',
+    width: "fit-content"
   };
 
   const variantStyles: Record<'primary' | 'secondary', CSSProperties> = {
