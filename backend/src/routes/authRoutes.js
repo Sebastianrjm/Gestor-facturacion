@@ -9,5 +9,6 @@ router.post('/login', login);
 
 // Ruta Protegida (pasa primero por verifyToken)
 router.get('/me', verifyToken, getMe);
+router.get('/nueva-factura', verifyToken, getMe);
 
 module.exports = router;

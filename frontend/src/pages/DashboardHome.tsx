@@ -3,6 +3,7 @@ import { Button } from '../components/Button';
 import '../App.css';
 import CustomSelect from '../components/customSelect';
 import type { SelectOption } from '../components/customSelect';
+import { useNavigate } from 'react-router-dom';
 // import API from '../services/api'; // Comentado temporalmente
 
 
@@ -59,6 +60,8 @@ export default function DashboardHome() {
     );
   }
 
+  const navigate = useNavigate();
+
   // 3. Renderizado de tus pantallas/tarjetas reales
   return (
     <div style={styles.header}>
@@ -67,7 +70,7 @@ export default function DashboardHome() {
 
         <p className="text">Un vistazo a tu negocio · </p>
 
-        <Button variant="primary" onClick={() => console.log('Guardar')}>
+        <Button variant="primary" onClick={() => navigate('/nueva-factura', { replace: true })}>
           Nueva factura
         </Button>
       </div>

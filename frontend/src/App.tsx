@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
+import NewBill from './pages/NewBill';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -19,6 +20,10 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
+            </Route>
+
+            <Route path="/nueva-factura" element={<DashboardLayout />}>
+              <Route index element={<NewBill />} />
             </Route>
           </Route>
 
