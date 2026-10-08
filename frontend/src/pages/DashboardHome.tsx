@@ -103,7 +103,12 @@ export default function DashboardHome() {
         <div style={styles.principalPanelParent}>
 
           <div style={styles.principalPanelChild}>
-            <p className='text'>FAC-2026-024 · Estudio Prisma</p>
+            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
+              <p className='text'>FAC-2026-024 · Estudio Prisma</p>
+              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
+                Editar factura
+              </Button>
+            </div>
             <div style={{display: "flex"}}>
               <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
               <CustomSelect
@@ -116,7 +121,30 @@ export default function DashboardHome() {
           </div>
 
           <div style={styles.principalPanelChild}>
-            <p className='text'>FAC-2026-023 · Café Origen</p>
+            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
+              <p className='text'>FAC-2026-023 · Café Origen</p>
+              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
+                Editar factura
+              </Button>
+            </div>
+            <div style={{display: "flex"}}>
+              <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
+              <CustomSelect
+                label="Estado"
+                value={estadoFactura1}
+                options={ESTADOS_FACTURA}
+                onChange={(newValue) => setEstadoFactura1(newValue)}
+              />
+            </div>
+          </div>
+
+          <div style={styles.principalPanelChild}>
+            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
+              <p className='text'>FAC-2026-022 · Marea Studio</p>
+              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
+                Editar factura
+              </Button>
+            </div>
             <div style={{display: "flex"}}>
               <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
               <CustomSelect

@@ -41,10 +41,24 @@ export const Button: React.FC<ButtonProps> = ({
       boxShadow: isHovered && !disabled ? '0 4px 12px rgba(14, 165, 233, 0.25)' : 'none',
     },
     secondary: {
-      backgroundColor: isHovered && !disabled ? '#f1f5f9' : '#ffffff',
-      color: '#0f172a',
-      borderColor: '#e2e8f0',
+      backgroundColor: isHovered && !disabled ? '#FFD9B7' : '#ffffff',
+      color: '#FF800E',
+      border: "0.2px solid #FF800E",
       boxShadow: isHovered && !disabled ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
+    },
+    primaryTiny: {
+      backgroundColor: isHovered && !disabled ? '#3b6cf1' : '#265CF0',
+      color: '#ffffff',
+      borderColor: 'transparent',
+      boxShadow: isHovered && !disabled ? '0 4px 12px rgba(14, 165, 233, 0.25)' : 'none',
+      padding: '6px 10px',
+    },
+    secondaryTiny: {
+      backgroundColor: isHovered && !disabled ? '#FFD9B7' : '#ffffff',
+      color: '#FF800E',
+      border: "0.2px solid #FF800E",
+      boxShadow: isHovered && !disabled ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
+      padding: '6px 10px',
     },
   };
 
