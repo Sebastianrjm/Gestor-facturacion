@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '../components/Button';
 import '../App.css';
-import CustomSelect from '../components/customSelect';
-import type { SelectOption } from '../components/customSelect';
+import CustomSelect from '../components/CustomSelect';
+import TemplateSidebar from '../layouts/TemplateSidebar';
+import type { SelectOption } from '../components/CustomSelect';
 import { useNavigate } from 'react-router-dom';
 // import API from '../services/api'; // Comentado temporalmente
 
@@ -19,6 +20,13 @@ export default function DashboardHome() {
   const [error, setError] = useState<string | null>(null);
 
   const [estadoFactura1, setEstadoFactura1] = useState('pendiente');
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+  const handleSelectTemplate = (templateId: string) => {
+    setIsSidebarOpen(false); // Cierra el sidebar
+    // Navega a la pantalla de nueva factura enviando la plantilla seleccionada
+    navigate(`/nueva-factura?plantilla=${templateId}`);
+  };
 
   /*
   useEffect(() => {
@@ -70,7 +78,7 @@ export default function DashboardHome() {
 
         <p className="text">Un vistazo a tu negocio · </p>
 
-        <Button variant="primary" onClick={() => navigate('/nueva-factura', { replace: true })}>
+        <Button variant="primary" onClick={() => setIsSidebarOpen(true)}>
           Nueva factura
         </Button>
       </div>
@@ -163,7 +171,12 @@ export default function DashboardHome() {
         
       </div>
 
-
+      {/* 4. Renderizado del componente Sidebar */}
+      <TemplateSidebar
+        open={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
 
     </div>
   );

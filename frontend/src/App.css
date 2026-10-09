@@ -22,12 +22,13 @@ input:-webkit-autofill:active {
 }
 
 .title {
-  text-align: start;
-  color: #172338;
-  font-size: 30px;
-  font-weight: bold;
-  line-height: 1.2em;
-  letter-spacing: -0.04em;
+  text-align: start !important;
+  color: #172338 ;
+  font-size: 30px !important;
+  font-weight: bold !important;
+  line-height: 1.2em !important;
+  letter-spacing: -0.04em !important;
+  font-family: 'Inter', sans-serif !important;
 }
 
 .subtitle {
@@ -35,9 +36,14 @@ input:-webkit-autofill:active {
 }
 
 .text {
-  font-size: 14px;
-  line-height: 1.5em;
-  text-align: start;
-  font-weight: 300;
-  color: #172338
+  font-size: 14px !important;
+  line-height: 1.5em !important;
+  text-align: start !important;
+  font-weight: 300 !important;
+  color: #172338;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.italic{
+  font-style: italic;
 }
