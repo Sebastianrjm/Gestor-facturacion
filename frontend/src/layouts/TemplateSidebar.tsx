@@ -54,7 +54,7 @@ export default function TemplateSidebar({ open, onClose, onSelectTemplate }: Tem
                 alt={item.nombre}
                 style={{borderRadius:"4px"}}
               />
-              <CardContent style={{gap: "8px"}}>
+              <CardContent style={styles.textStyles}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} className='title'>
                   {item.nombre}
                 </Typography>
@@ -75,5 +75,12 @@ const styles: Record<string, React.CSSProperties> = {
         padding: "20px",
         display: "flex",
         flexDirection: "column"
+    },
+    textStyles: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        padding: "0px",
+        width: "100%"
     }
 }
