@@ -254,7 +254,7 @@ export default function NewBill() {
 
               {/* Botón para añadir una nueva fila */}
               <div style={{ marginTop: '8px' }}>
-                <Button variant="secondary" onClick={handleAddItem}>
+                <Button variant="secondaryTiny" onClick={handleAddItem}>
                   + Añadir fila
                 </Button>
               </div>
