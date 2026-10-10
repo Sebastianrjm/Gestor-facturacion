@@ -6,6 +6,7 @@ import type { SelectOption } from '../components/CustomSelect';
 import CustomSelect from '../components/CustomSelect';
 import { Button } from '../components/Button';
 import { useNavigate } from 'react-router-dom';
+import InvoicePreview, {  type ItemDetalle } from '../components/InvoicePreview';
 
 
 interface BillFormData {
@@ -14,7 +15,8 @@ interface BillFormData {
   numeroFactura: string;
   fechaEmision: string;
   fechaVencimiento: string;
-  tasaCambio: number
+  tasaCambio: number;
+  notas: string
 }
 
 
@@ -30,10 +32,26 @@ const MONEDA_REFERENCIA: SelectOption[] = [
 
 export default function NewBill() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const plantillaId = searchParams.get('plantilla') || 'MODERNO';
+
+  const [formData, setFormData] = useState<BillFormData>({
+    cliente: '',
+    correo: '',
+    numeroFactura: 'FAC-2026-025',
+    fechaEmision: new Date().toISOString().split('T')[0],
+    fechaVencimiento: '',
+    tasaCambio: '',
+    notas: '',
+  });
+
+  const [monedaPrincipal, setMonedaPrincipal] = useState('USD');
+  const [monedaReferencia, setMonedaReferencia] = useState('VES');
+
   const [items, setItems] = useState<ItemDetalle[]>([
     { id: '1', descripcion: '', cantidad: 1, precioUnitario: 0 },
   ]);
-  // Función para agregar un nuevo concepto/fila
+
   const handleAddItem = () => {
     const newItem: ItemDetalle = {
       id: Date.now().toString(),
@@ -44,7 +62,6 @@ export default function NewBill() {
     setItems((prev) => [...prev, newItem]);
   };
 
-  // Función para actualizar un campo específico de una fila
   const handleItemChange = (
     id: string,
     field: keyof ItemDetalle,
@@ -57,28 +74,14 @@ export default function NewBill() {
     );
   };
 
-  // Función para eliminar una fila
   const handleRemoveItem = (id: string) => {
-    if (items.length === 1) return; // Evita eliminar la última fila
+    if (items.length === 1) return;
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
-  const [searchParams] = useSearchParams();
-  const plantillaId = searchParams.get('plantilla') || 'MODERNO';
 
-  const [formData, setFormData] = useState<BillFormData>({
-    cliente: '',
-    correo: "",
-    numeroFactura: 'FAC-2026-025',
-    fechaEmision: new Date().toISOString().split('T')[0], // Fecha de hoy (YYYY-MM-DD)
-    fechaVencimiento: '',
-    tasaCambio: ""
-  });
-
-  const [monedaPrincipal, setMonedaPrincipal1] = useState('USD');
-  const [monedaReferencia, setMonedaReferencia1] = useState('VES');
-
-  // 2. Función genérica para actualizar cualquier input
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -92,10 +95,9 @@ export default function NewBill() {
         <h1 className='title'>Editar factura</h1>
 
         <p className='text'>FAC-2026-024 · Borrador · USD</p>
-        <h2>Creando factura con diseño: {plantillaId}</h2>
       </div>
 
-      <div style={{display: "flex", gap: "12px", flexDirection: "column"}}>
+      <div style={{display: "flex", gap: "12px", flexDirection: "column", marginTop: "24px"}}>
         <div style={styles.Separator}>
           <div style={styles.principalPanel}>
             <h2 style={styles.h2Separator}>01   Cliente y fechas</h2>
@@ -107,7 +109,7 @@ export default function NewBill() {
                 name="cliente"
                 value={formData.cliente}
                 onChange={handleChange}
-                placeholder="Estudio Prisma"
+                placeholder="Nombre del cliente"
                 required
               />
 
@@ -117,7 +119,7 @@ export default function NewBill() {
                 name="correo"
                 value={formData.correo}
                 onChange={handleChange}
-                placeholder="EstudioPrisma@estudioprisma.com"
+                placeholder="cliente@cliente.com"
                 required
               />
 
@@ -148,14 +150,14 @@ export default function NewBill() {
                 label="Moneda Principal"
                 value={monedaPrincipal}
                 options={MONEDA_PRINCIPAL}
-                onChange={(newValue) => setMonedaPrincipal1(newValue)}
+                onChange={(newValue) => setMonedaPrincipal(newValue)}
               />
 
               <CustomSelect
                 label="Moneda Referencia"
                 value={monedaReferencia}
                 options={MONEDA_REFERENCIA}
-                onChange={(newValue) => setMonedaReferencia1(newValue)}
+                onChange={(newValue) => setMonedaReferencia(newValue)}
               />
 
               <InputField
@@ -164,7 +166,7 @@ export default function NewBill() {
                 name="tasaCambio"
                 value={formData.tasaCambio}
                 onChange={handleChange}
-                placeholder="500.10"
+                placeholder="1"
                 required
               />
             </div>
@@ -262,8 +264,13 @@ export default function NewBill() {
 
             <div style={styles.notesPanel}>
               <h2 style={styles.h2Separator}>04   Notas</h2>
-              <textarea name="Notas" id="notas" style={styles.textAreaNotes}>
-
+              <textarea 
+                name="notas" 
+                id="notas" 
+                style={styles.textAreaNotes}
+                onChange={handleChange} 
+                placeholder="Condiciones de pago, datos bancarios..."
+                value={formData.notas}>
               </textarea>
             </div>
 
@@ -271,8 +278,15 @@ export default function NewBill() {
           </div>
 
           <div style={styles.principalPanel}>
-            <p>aqui va el formulario</p>
-            
+            <h2 style={styles.h2Separator}>Vista Previa en Vivo</h2>
+            <span style={styles.badge}>{plantillaId}</span>
+            <InvoicePreview
+              formData={formData}
+              items={items}
+              monedaPrincipal={monedaPrincipal}
+              monedaReferencia={monedaReferencia}
+              plantillaId={plantillaId}
+            />
           </div>
 
         </div>
@@ -394,5 +408,15 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "8px",
     padding: "12px",
     border: "1px solid #DCE2EC"
-  }
+  },
+  badge: {
+    backgroundColor: '#EEF2FF',
+    color: '#4F46E5',
+    fontSize: '10px',
+    fontWeight: '700',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    letterSpacing: '0.05em',
+    width: "fit-content"
+  },
 }
