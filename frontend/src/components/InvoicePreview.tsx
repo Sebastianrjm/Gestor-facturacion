@@ -25,7 +25,7 @@ interface InvoicePreviewProps {
   monedaPrincipal: string;
   monedaReferencia: string;
   plantillaId: string;
-  profileImage?: string;
+  profileImage: string;
 }
 
 export default function InvoicePreview({
@@ -54,11 +54,7 @@ export default function InvoicePreview({
             <div style={previewStyles.invoiceMeta}>
                 <h2 className='title' >Factura</h2>
                 <div className='BillDescription'>
-                    <p>
-                        {formData.numeroFactura || 'FAC-2026-024'} 
-                        ·  
-                        {formData.estadoFactura || 'Borrador'} 
-                    </p>
+                    <p> {formData.numeroFactura || 'FAC-2026-024'} · {formData.estadoFactura || 'Borrador'} </p>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import InputField from '../components/inputField';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { SelectOption } from '../components/CustomSelect';
 import CustomSelect from '../components/CustomSelect';
 import { Button } from '../components/Button';
@@ -19,21 +19,11 @@ interface BillFormData {
   notas: string
 }
 
-
-const MONEDA_PRINCIPAL: SelectOption[] = [
-  { label: 'USD · Dólar estadounidense', value: 'USD' },
-  { label: 'VES · Bolívar', value: 'VES' },
-]
-
-const MONEDA_REFERENCIA: SelectOption[] = [
-  { label: 'VES · Bolívar', value: 'VES' },
-  { label: 'USD · Dólar estadounidense', value: 'USD' },
-]
-
 export default function NewBill() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plantillaId = searchParams.get('plantilla') || 'MODERNO';
+  const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
 
   const [formData, setFormData] = useState<BillFormData>({
     cliente: '',
@@ -43,10 +33,17 @@ export default function NewBill() {
     fechaVencimiento: '',
     tasaCambio: '',
     notas: '',
+    estadoFactura: ""
   });
 
   const [monedaPrincipal, setMonedaPrincipal] = useState('USD');
   const [monedaReferencia, setMonedaReferencia] = useState('VES');
+
+  // Estado para las divisas que vienen de la API (con un respaldo inicial por seguridad)
+  const [monedasDisponibles, setMonedasDisponibles] = useState<SelectOption[]>([
+    { label: 'USD · Dólar estadounidense', value: 'USD' },
+    { label: 'VES · Bolívar', value: 'VES' }
+  ]);
 
   const [items, setItems] = useState<ItemDetalle[]>([
     { id: '1', descripcion: '', cantidad: 1, precioUnitario: 0 },
@@ -89,12 +86,70 @@ export default function NewBill() {
     }));
   };
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5000/api/v1/presupuestos/nuevo', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        
+        if (result.status === 'SUCCESS') {
+          // Actualizas tu formData y estado con lo que devolvió la API
+          setFormData(prev => ({
+            ...prev,
+            numeroFactura: result.data.numeroFactura,
+            estadoFactura: result.data.estadoFactura,
+            emisor: result.data.emisor,
+            nombreUsuario: result.data.nombreUsuario,
+          }));
+          setProfileImage(result.data.profileImage);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos iniciales de la factura:', error);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5000/api/v1/presupuestos/divisas', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        
+        if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
+          // Mapeamos los datos de la BD al formato que requiere CustomSelect ({ label, value })
+          const formattedCurrencies: SelectOption[] = result.data.map((moneda: any) => ({
+            label: `${moneda.codigo} · ${moneda.nombre}`,
+            value: moneda.codigo
+          }));
+          
+          setMonedasDisponibles(formattedCurrencies);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos de las divisas:', error);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
+
   return (
     <div>
       <div style={styles.header}>
         <h1 className='title'>Editar factura</h1>
 
-        <p className='text'>FAC-2026-024 · Borrador · USD</p>
+        <p className='text'>{formData.numeroFactura} · {formData.estadoFactura}</p>
       </div>
 
       <div style={{display: "flex", gap: "12px", flexDirection: "column", marginTop: "24px"}}>
@@ -149,14 +204,14 @@ export default function NewBill() {
               <CustomSelect
                 label="Moneda Principal"
                 value={monedaPrincipal}
-                options={MONEDA_PRINCIPAL}
+                options={monedasDisponibles}
                 onChange={(newValue) => setMonedaPrincipal(newValue)}
               />
 
               <CustomSelect
                 label="Moneda Referencia"
                 value={monedaReferencia}
-                options={MONEDA_REFERENCIA}
+                options={monedasDisponibles}
                 onChange={(newValue) => setMonedaReferencia(newValue)}
               />
 
@@ -286,6 +341,7 @@ export default function NewBill() {
               monedaPrincipal={monedaPrincipal}
               monedaReferencia={monedaReferencia}
               plantillaId={plantillaId}
+              profileImage={profileImage}
             />
           </div>
 

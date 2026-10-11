@@ -32,6 +32,24 @@ const getPlantillaById = async (req, res) => {
   }
 };
 
+const NewBill = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query('SELECT id, nombre, descripcion, preview_image_url FROM plantillas_presupuesto WHERE id = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ status: 'ERROR', message: 'Plantilla no encontrada' });
+    }
+
+    res.json({
+      status: 'SUCCESS',
+      data: result.rows[0]
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'ERROR', message: 'Error al obtener la plantilla', error: error.message });
+  }
+};
+
 module.exports = {
   getPlantillas,
   getPlantillaById
