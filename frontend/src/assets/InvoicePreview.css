@@ -1,0 +1,47 @@
+/* =========================================
+   1. Estilos Base Compartidos
+   ========================================= */
+.invoice-sheet-container {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  min-height: 480px;
+  font-family: 'Inter', sans-serif;
+}
+
+.invoice-sheet-container .information-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* =========================================
+   2. Estilos Dinámicos por ID de Plantilla
+   ========================================= */
+
+/* --- Plantilla: MODERNO --- */
+.invoice-sheet-container.template-moderno .information-section {
+  background-color: #EDF2FF !important;
+}
+
+.invoice-sheet-container.template-moderno .image-transmitter {
+  background-color: #265CF0 !important;
+}
+
+/* --- Plantilla: MINIMALISTA --- */
+.invoice-sheet-container.template-minimalista .information-section {
+  background-color: #FAFAFA !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+.invoice-sheet-container.template-minimalista .image-transmitter {
+  background-color: #111827 !important;
+  border-radius: 4px !important;
+}

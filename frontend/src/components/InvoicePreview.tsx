@@ -44,10 +44,11 @@ export default function InvoicePreview({
   const tasaNumerica = parseFloat(String(formData.tasaCambio)) || 0;
   const totalReferencial = tasaNumerica > 0 ? subtotal * tasaNumerica : 0;
 
-  const templateClass = `template-${plantillaId.toLowerCase()}`;
+  // Generamos la clase CSS dinámica basada en la plantilla (ej: 'template-moderno', 'template-minimalista')
+  const templateClass = `template-${(plantillaId || 'moderno').toLowerCase()}`;
 
   return (
-    <div style={previewStyles.sheet}>
+    <div className={`invoice-sheet-container ${templateClass}`} style={previewStyles.sheet}>
       {/* Cabecera del Documento */}
         <div style={previewStyles.header}>
             <div style={previewStyles.invoiceMeta}>
@@ -62,8 +63,8 @@ export default function InvoicePreview({
             </div>
         </div>
         {/* Seccion informativa */}
-        <div style={previewStyles.InformationSection}>
-            <div style={previewStyles.ImageTransmitter}>
+        <div className="information-section" style={previewStyles.InformationSection}>
+            <div className="image-transmitter" style={previewStyles.ImageTransmitter}>
                 {profileImage ? (
                     <img 
                     src={profileImage} 
@@ -97,7 +98,7 @@ export default function InvoicePreview({
             </div>
         </div>
 
-      {/* Tabla de Conceptos */}
+        {/* Tabla de Conceptos */}
         <table style={previewStyles.table}>
             <thead>
             <tr style={previewStyles.trHeader}>
@@ -336,7 +337,7 @@ const previewStyles: Record<string, React.CSSProperties> = {
     fontSize: "14px",
     fontStyle: "italic",
     fontWeight: "300",
-    letterSpacing: "-0.02",
+    letterSpacing: "-0.02em",
     lineHeight: "1.5em",
   },
     notesSection: {

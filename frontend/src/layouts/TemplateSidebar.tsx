@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Drawer, Box, Typography, Card, CardMedia, CardContent, CardActionArea } from '@mui/material';
 
 interface Plantilla {
@@ -15,23 +15,46 @@ interface TemplateSidebarProps {
 }
 
 export default function TemplateSidebar({ open, onClose, onSelectTemplate }: TemplateSidebarProps) {
-  const plantillas = useMemo<Plantilla[]>(() => {
-    if (!open) return [];
+  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return [
-      {
-        id: 'MODERNO',
-        nombre: 'Diseño Moderno',
-        descripcion: 'Cabecera destacada con bordes suaves.',
-        preview_image_url: 'https://via.placeholder.com/300x180?text=Vista+Previa+Moderno',
-      },
-      {
-        id: 'MINIMALISTA',
-        nombre: 'Diseño Minimalista',
-        descripcion: 'Líneas finas y contraste alto.',
-        preview_image_url: 'https://via.placeholder.com/300x180?text=Vista+Previa+Minimalista',
-      },
-    ];
+  useEffect(() => {
+    // Solo hace el fetch si el Drawer está abierto para evitar peticiones innecesarias
+    if (!open) return;
+
+    const fetchPlantillas = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Recuperamos el token de autenticación almacenado al hacer login
+        const token = localStorage.getItem('token'); 
+
+        const response = await fetch('http://localhost:5000/api/v1/plantillas', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Error al obtener las plantillas');
+        }
+
+        // Como tu controlador devuelve { status: 'SUCCESS', data: [...] }
+        setPlantillas(result.data);
+      } catch (err: any) {
+        console.error('Error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlantillas();
   }, [open]);
 
   return (
