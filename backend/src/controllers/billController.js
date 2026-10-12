@@ -4,6 +4,124 @@ const handlebars = require('handlebars');
 const puppeteer = require('puppeteer');
 const db = require('../config/db');
 
+const getDashboardData = async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const userId = req.user.userId || req.user.id;
+
+        // 1. Obtener emisor del usuario
+        const userRes = await client.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
+        }
+        const emisorId = userRes.rows[0].emisor_id;
+
+        // 2. Calcular métricas usando los valores reales del ENUM de la base de datos
+        const metricsQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN estado::text = 'APROBADO' AND EXTRACT(MONTH FROM fecha_emision) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_emision) = EXTRACT(YEAR FROM CURRENT_DATE) THEN total ELSE 0 END), 0) AS cobrado_mes,
+                COALESCE(SUM(CASE WHEN estado::text = 'ENVIADO' THEN total ELSE 0 END), 0) AS pendiente_pago,
+                COUNT(*) AS facturas_emitidas
+            FROM presupuestos
+            WHERE emisor_id = $1 AND estado::text != 'RECHAZADO'
+        `;
+        const metricsRes = await client.query(metricsQuery, [emisorId]);
+        const metrics = metricsRes.rows[0];
+
+        // 3. Obtener el listado de facturas optimizado
+        const invoicesQuery = `
+            SELECT 
+                p.id,
+                p.folio,
+                p.estado,
+                p.total,
+                p.moneda_codigo,
+                c.nombre_comercial AS cliente_nombre
+            FROM presupuestos p
+            LEFT JOIN clientes c ON p.cliente_id = c.id
+            WHERE p.emisor_id = $1
+            ORDER BY p.created_at DESC;
+        `;
+        const invoicesRes = await client.query(invoicesQuery, [emisorId]);
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            data: {
+                metrics: {
+                    cobradoMes: Number(metrics.cobrado_mes),
+                    pendientePago: Number(metrics.pendiente_pago),
+                    facturasEmitidas: Number(metrics.facturas_emitidas)
+                },
+                invoices: invoicesRes.rows
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al cargar dashboard:', error);
+        res.status(500).json({ status: 'ERROR', message: 'Error al cargar los datos del dashboard', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+// Actualizar estado de la factura (Pendiente, Pagada, Anulada)
+const updateInvoiceStatus = async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const { id } = req.params;
+        const { estado } = req.body;
+        const userId = req.user.userId || req.user.id;
+
+        const userRes = await client.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
+        }
+        const emisorId = userRes.rows[0].emisor_id;
+
+        // 1. Actualizar el estado de la factura
+        const updateRes = await client.query(
+            `UPDATE presupuestos SET estado = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND emisor_id = $3 RETURNING id, folio, estado`,
+            [estado.toUpperCase(), id, emisorId]
+        );
+
+        if (updateRes.rows.length === 0) {
+            return res.status(404).json({ status: 'ERROR', message: 'Factura no encontrada' });
+        }
+
+        // 2. Recalcular las métricas actualizadas del emisor inmediatamente
+        const metricsQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN estado::text = 'APROBADO' AND EXTRACT(MONTH FROM fecha_emision) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_emision) = EXTRACT(YEAR FROM CURRENT_DATE) THEN total ELSE 0 END), 0) AS cobrado_mes,
+                COALESCE(SUM(CASE WHEN estado::text = 'ENVIADO' THEN total ELSE 0 END), 0) AS pendiente_pago,
+                COUNT(*) AS facturas_emitidas
+            FROM presupuestos
+            WHERE emisor_id = $1 AND estado::text != 'RECHAZADO'
+        `;
+        const metricsRes = await client.query(metricsQuery, [emisorId]);
+        const metrics = metricsRes.rows[0];
+
+        // 3. Responder con la factura actualizada y las nuevas métricas
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: 'Estado y métricas actualizados correctamente',
+            data: {
+                updatedInvoice: updateRes.rows[0],
+                metrics: {
+                    cobradoMes: Number(metrics.cobrado_mes),
+                    pendientePago: Number(metrics.pendiente_pago),
+                    facturasEmitidas: Number(metrics.facturas_emitidas)
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar estado:', error);
+        res.status(500).json({ status: 'ERROR', message: 'Error al actualizar el estado', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
 const getNewBillInitialization = async (req, res) => {
   try {
     // El middleware verifyToken inyecta el usuario decodificado en req.user
@@ -299,5 +417,7 @@ module.exports = {
   getNewBillInitialization,
   getCurrencies,
   saveBill,
-  generateBillPDF
+  generateBillPDF,
+  getDashboardData,
+  updateInvoiceStatus
 };

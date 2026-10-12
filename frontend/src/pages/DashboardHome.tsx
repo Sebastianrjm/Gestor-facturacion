@@ -1,53 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import '../App.css';
 import CustomSelect from '../components/CustomSelect';
 import TemplateSidebar from '../layouts/TemplateSidebar';
 import type { SelectOption } from '../components/CustomSelect';
 import { useNavigate } from 'react-router-dom';
-// import API from '../services/api'; // Comentado temporalmente
+import { getDashboardData, updateInvoiceStatus } from '../services/billService';
 
 
 const ESTADOS_FACTURA: SelectOption[] = [
-  { label: 'Pendiente', value: 'pendiente' },
-  { label: 'Pagada', value: 'pagada' },
-  { label: 'Anulada', value: 'anulada' },
-]
+  { label: 'Borrador', value: 'BORRADOR' },
+  { label: 'Enviado', value: 'ENVIADO' },
+  { label: 'Aprobado', value: 'APROBADO' },
+  { label: 'Rechazado', value: 'RECHAZADO' },
+  { label: 'Vencido', value: 'VENCIDO' },
+];
 
 export default function DashboardHome() {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const [metrics, setMetrics] = useState({ cobradoMes: 0, pendientePago: 0, facturasEmitidas: 0 });
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [estadoFactura1, setEstadoFactura1] = useState('pendiente');
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
-  const handleSelectTemplate = (templateId: string) => {
-    setIsSidebarOpen(false); // Cierra el sidebar
-    // Navega a la pantalla de nueva factura enviando la plantilla seleccionada
-    navigate(`/nueva-factura?plantilla=${templateId}`);
-  };
-
-  /*
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchDashboard = async () => {
       try {
         setLoading(true);
-        // Coloca aquí tu endpoint real de facturas/métricas
-        const response = await API.get('/invoices'); 
-        setData(response.data);
+        const data = await getDashboardData();
+        setMetrics(data.metrics);
+        setInvoices(data.invoices);
       } catch (err: any) {
         console.error('Error al cargar información:', err);
-        setError(err.response?.data?.message || 'No se pudo cargar la información.');
+        setError(err.message || 'No se pudo cargar la información.');
       } finally {
-        // ⚠️ CLAVE: Esto garantiza que la pantalla deje de estar "Cargando"
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    fetchDashboard();
   }, []);
-  */
+
+  // Manejar cambio de estado de una factura directamente en la lista
+  const handleStatusChange = async (id: string, nuevoEstado: string) => {
+    try {
+      const responseData = await updateInvoiceStatus(id, nuevoEstado);
+      
+      // 1. Actualizamos localmente el estado en la tabla de facturas
+      setInvoices((prev) =>
+        prev.map((inv) => (inv.id === id ? { ...inv, estado: nuevoEstado } : inv))
+      );
+
+      // 2. Actualizamos automáticamente las tarjetas de métricas con los datos frescos del backend
+      if (responseData.metrics) {
+        setMetrics(responseData.metrics);
+      }
+    } catch (err: any) {
+      alert(`Error al actualizar estado: ${err.message}`);
+    }
+  };
+
+  const handleSelectTemplate = (templateId: string) => {
+    setIsSidebarOpen(false);
+    navigate(`/nueva-factura?plantilla=${templateId}`);
+  };
 
    //1. Manejo visible de la carga (evita devolver null)
   if (loading) {
@@ -68,8 +85,6 @@ export default function DashboardHome() {
     );
   }
 
-  const navigate = useNavigate();
-
   // 3. Renderizado de tus pantallas/tarjetas reales
   return (
     <div style={styles.header}>
@@ -87,15 +102,15 @@ export default function DashboardHome() {
       <div style={styles.grid}>
         <div style={styles.card}>
           <span className='text'>Cobrado este mes</span>
-          <h2 className='title'>$ 4,520.00</h2>
+          <h2 className='title'>$ {metrics.cobradoMes.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h2>
         </div>
         <div style={styles.card}>
           <span className='text'>Pendiente de pago</span>
-          <h2 className='title'>$ 1,520.00</h2>
+          <h2 className='title'>$ {metrics.pendientePago.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h2>
         </div>
         <div style={styles.card}>
           <span className='text'>Facturas emitidas</span>
-          <h2 className='title'>8</h2>
+          <h2 className='title'>{metrics.facturasEmitidas}</h2>
         </div>
       </div>
 
@@ -112,61 +127,33 @@ export default function DashboardHome() {
 
         {/* Cards de las facturas */}
         <div style={styles.principalPanelParent}>
-
-          <div style={styles.principalPanelChild}>
-            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
-              <p className='text'>FAC-2026-024 · Estudio Prisma</p>
-              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
-                Editar factura
-              </Button>
-            </div>
-            <div style={{display: "flex"}}>
-              <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
-              <CustomSelect
-                label="Estado"
-                value={estadoFactura1}
-                options={ESTADOS_FACTURA}
-                onChange={(newValue) => setEstadoFactura1(newValue)}
-              />
-            </div>
-          </div>
-
-          <div style={styles.principalPanelChild}>
-            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
-              <p className='text'>FAC-2026-023 · Café Origen</p>
-              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
-                Editar factura
-              </Button>
-            </div>
-            <div style={{display: "flex"}}>
-              <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
-              <CustomSelect
-                label="Estado"
-                value={estadoFactura1}
-                options={ESTADOS_FACTURA}
-                onChange={(newValue) => setEstadoFactura1(newValue)}
-              />
-            </div>
-          </div>
-
-          <div style={styles.principalPanelChild}>
-            <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
-              <p className='text'>FAC-2026-022 · Marea Studio</p>
-              <Button variant="secondaryTiny" onClick={() => console.log('Guardar')}>
-                Editar factura
-              </Button>
-            </div>
-            <div style={{display: "flex"}}>
-              <p style={{marginRight: "20px"}} className='text'>$2,378.00</p>
-              <CustomSelect
-                label="Estado"
-                value={estadoFactura1}
-                options={ESTADOS_FACTURA}
-                onChange={(newValue) => setEstadoFactura1(newValue)}
-              />
-            </div>
-          </div>
-
+          {invoices.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+              No tienes facturas registradas todavía. ¡Crea la primera!
+            </p>
+          ) : (
+            invoices.map((inv) => (
+              <div key={inv.id} style={styles.principalPanelChild}>
+                <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
+                  <p className='text'><strong>{inv.folio}</strong> · {inv.cliente_nombre || 'Cliente general'}</p>
+                  <Button variant="secondaryTiny" onClick={() => navigate(`/editar-factura?id=${inv.id}`)}>
+                    Editar factura
+                  </Button>
+                </div>
+                <div style={{display: "flex", alignItems: "center"}}>
+                  <p style={{marginRight: "20px"}} className='text'>
+                    ${Number(inv.total).toFixed(2)} {inv.moneda_codigo}
+                  </p>
+                  <CustomSelect
+                    label="Estado"
+                    value={inv.estado || 'BORRADOR'}
+                    options={ESTADOS_FACTURA}
+                    onChange={(newValue) => handleStatusChange(inv.id, newValue)}
+                  />
+                </div>
+              </div>
+            ))
+          )}
         </div>
         
       </div>

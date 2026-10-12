@@ -17,6 +17,35 @@ export interface BillPayload {
   }>;
 }
 
+export const getDashboardData = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:5000/api/v1/presupuestos/dashboard', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const result = await response.json();
+  if (!response.ok || result.status !== 'SUCCESS') {
+    throw new Error(result.message || 'Error al cargar datos del dashboard');
+  }
+  return result.data; // Retorna { metrics: { cobradoMes, pendientePago, facturasEmitidas }, invoices: [...] }
+};
+
+export const updateInvoiceStatus = async (id: string, estado: string) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}/estado`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ estado })
+  });
+  const result = await response.json();
+  if (!response.ok || result.status !== 'SUCCESS') {
+    throw new Error(result.message || 'Error al actualizar estado');
+  }
+  return result.data; // Retorna { updatedInvoice, metrics }
+};
+
 export const saveAndDownloadBill = async (payload: BillPayload) => {
   const token = localStorage.getItem('token');
 
