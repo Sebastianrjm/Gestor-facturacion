@@ -7,6 +7,7 @@ import CustomSelect from '../components/CustomSelect';
 import { Button } from '../components/Button';
 import { useNavigate } from 'react-router-dom';
 import InvoicePreview, {  type ItemDetalle } from '../components/InvoicePreview';
+import { saveAndDownloadBill } from '../services/billService';
 
 
 interface BillFormData {
@@ -16,7 +17,8 @@ interface BillFormData {
   fechaEmision: string;
   fechaVencimiento: string;
   tasaCambio: number;
-  notas: string
+  notas: string,
+  estadoFactura?: string;
 }
 
 export default function NewBill() {
@@ -24,6 +26,7 @@ export default function NewBill() {
   const [searchParams] = useSearchParams();
   const plantillaId = searchParams.get('plantilla') || 'MODERNO';
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
+  const [presupuestoId, setPresupuestoId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<BillFormData>({
     cliente: '',
@@ -86,6 +89,8 @@ export default function NewBill() {
     }));
   };
 
+  // fetch data inicial al entrar
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -116,6 +121,8 @@ export default function NewBill() {
     fetchInitialData();
   }, []);
 
+  // fetch monedas
+
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
@@ -143,6 +150,42 @@ export default function NewBill() {
 
     fetchCurrencies();
   }, []);
+
+  const calcularSubtotal = () => {
+    return items.reduce((acc, item) => acc + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
+  };
+
+  // fetch para guardar 
+
+  const handleSaveAndDownload = async () => {
+    try {
+      const subtotalCalculado = calcularSubtotal();
+
+      const folioGenerado = await saveAndDownloadBill({
+        clienteNombre: formData.cliente,
+        clienteCorreo: formData.correo,
+        folio: formData.numeroFactura,
+        monedaCodigo: monedaPrincipal,
+        tasaCambioAplicada: Number(formData.tasaCambio) || 1.0000,
+        subtotal: subtotalCalculado,
+        total: subtotalCalculado, // Puedes sumarle impuestos aquí si los implementas
+        plantillaId: plantillaId,
+        fechaEmision: formData.fechaEmision,
+        fechaVencimiento: formData.fechaVencimiento,
+        notasComerciales: formData.notas,
+        items: items
+      });
+
+      console.log(`Factura ${folioGenerado} procesada con éxito`);
+      
+      // Opcional: Redirigir al usuario al dashboard o lista de facturas
+      // navigate('/dashboard');
+
+    } catch (error: any) {
+      console.error('Error en el proceso:', error);
+      alert(`Hubo un problema: ${error.message}`);
+    }
+  };
 
   return (
     <div>
@@ -348,8 +391,8 @@ export default function NewBill() {
         </div>
 
         <div style={{display: "flex", gap: "12px"}}>
-          <Button variant="primary" onClick={() => console.log('Descargar factura')}>
-            Descargar factura
+          <Button variant="primary" onClick={handleSaveAndDownload}>
+            Guardar y descargar PDF
           </Button>
 
           <Button variant="secondary" variant="secondary" 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura {{folio}}</title>
+    <style>
+        {{{customCss}}}
+    </style>
+</head>
+<body>
+    <div class="invoice-sheet {{plantillaClass}}">
+        <!-- Cabecera -->
+        <div class="invoice-header">
+            <div class="invoice-meta">
+                <h2 class="invoice-title">Factura</h2>
+                <div class="invoice-bill-description">
+                    <p>{{folio}}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información -->
+        <div class="invoice-info-section">
+            <div class="invoice-image-transmitter">
+                {{#if logo_url}}
+                    <img src="{{logo_url}}" alt="Perfil Emisor" />
+                {{else}}
+                    <span style="color: #FFFFFF; font-weight: bold;">SR</span>
+                {{/if}}
+            </div>
+
+            <div class="invoice-info-texts">
+                <p class="invoice-info-text">EMISOR · {{emisor_nombre}}</p>
+                <p class="invoice-info-text">NOMBRE DEL EMISOR · {{nombre_usuario}}</p>
+                <p class="invoice-info-text">CLIENTE · {{cliente_nombre}}</p>
+                <p class="invoice-info-text">EMAIL CLIENTE · {{cliente_email}}</p>
+                <p class="invoice-info-text">Emisión: {{fechaEmisionFormateada}}</p>
+                <p class="invoice-info-text">Vence: {{fechaVencimientoFormateada}}</p>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <table class="invoice-table">
+            <thead>
+                <tr class="invoice-tr-header">
+                    <th class="invoice-th">Descripción</th>
+                    <th class="invoice-th-center">Cant.</th>
+                    <th class="invoice-th-right">Precio U.</th>
+                    <th class="invoice-th-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each items}}
+                <tr class="invoice-tr-body">
+                    <td class="invoice-td">{{descripcion}}</td>
+                    <td class="invoice-td-center">{{cantidad}}</td>
+                    <td class="invoice-td-right">${{precio_unitario}}</td>
+                    <td class="invoice-td-right-bold">${{subtotal_linea}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div class="invoice-totals-container">
+            <div class="invoice-total-row">
+                <span>Subtotal:</span>
+                <strong>${{subtotal}} {{moneda_codigo}}</strong>
+            </div>
+            <div class="invoice-total-row-final">
+                <span>Total a pagar:</span>
+                <strong>${{subtotal}} {{moneda_codigo}}</strong>
+            </div>
+
+            {{#if total_referencial}}
+            <div class="invoice-ref-box">
+                <span class="invoice-ref-label">Monto Referencial:</span>
+                <strong class="invoice-ref-value">{{total_referencial}} VES</strong>
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- Notas -->
+        {{#if notas_comerciales}}
+        <div class="invoice-notes-section">
+            <span class="invoice-notes-label">Notas / Condiciones:</span>
+            <p class="invoice-notes-text">{{notas_comerciales}}</p>
+        </div>
+        {{/if}}
+    </div>
+</body>
+</html>
