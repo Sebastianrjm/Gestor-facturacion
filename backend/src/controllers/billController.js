@@ -413,11 +413,62 @@ const generateBillPDF = async (req, res) => {
     }
 };
 
+const getInvoiceById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.userId || req.user.id;
+
+        // 1. Obtener emisor del usuario logueado
+        const userRes = await db.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
+        }
+        const emisorId = userRes.rows[0].emisor_id;
+
+        // 2. Buscar la factura asegurando que pertenezca al emisor
+        const invoiceQuery = `
+            SELECT 
+                p.*, 
+                c.nombre_comercial AS cliente_nombre, 
+                c.email AS cliente_correo
+            FROM presupuestos p
+            LEFT JOIN clientes c ON p.cliente_id = c.id
+            WHERE p.id = $1 AND p.emisor_id = $2
+        `;
+        const invoiceRes = await db.query(invoiceQuery, [id, emisorId]);
+
+        if (invoiceRes.rows.length === 0) {
+            return res.status(404).json({ status: 'ERROR', message: 'Factura no encontrada' });
+        }
+
+        // 3. Buscar los ítems (detalles) de la factura
+        const itemsQuery = `
+            SELECT id, descripcion, cantidad, precio_unitario AS "precioUnitario", subtotal_linea AS "subtotalLinea"
+            FROM presupuesto_detalles
+            WHERE presupuesto_id = $1
+        `;
+        const itemsRes = await db.query(itemsQuery, [id]);
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            data: {
+                invoice: invoiceRes.rows[0],
+                items: itemsRes.rows
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al obtener factura por ID:', error);
+        res.status(500).json({ status: 'ERROR', message: 'Error al obtener la factura', error: error.message });
+    }
+};
+
 module.exports = {
   getNewBillInitialization,
   getCurrencies,
   saveBill,
   generateBillPDF,
   getDashboardData,
-  updateInvoiceStatus
+  updateInvoiceStatus,
+  getInvoiceById
 };

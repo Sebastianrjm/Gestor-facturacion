@@ -89,12 +89,15 @@ export default function InvoicePreview({
         </thead>
         <tbody>
           {items.map((item, idx) => {
-            const totalFila = (item.cantidad || 0) * (item.precioUnitario || 0);
+            const cantidadNum = Number(item.cantidad) || 0;
+            const precioNum = Number(item.precioUnitario) || 0;
+            const totalFila = cantidadNum * precioNum;
+            
             return (
               <tr key={item.id || idx} className="invoice-tr-body">
                 <td className="invoice-td">{item.descripcion || 'Descripción del servicio...'}</td>
-                <td className="invoice-td-center">{item.cantidad}</td>
-                <td className="invoice-td-right">${(item.precioUnitario || 0).toFixed(2)}</td>
+                <td className="invoice-td-center">{cantidadNum}</td>
+                <td className="invoice-td-right">${precioNum.toFixed(2)}</td>
                 <td className="invoice-td-right-bold">${totalFila.toFixed(2)}</td>
               </tr>
             );

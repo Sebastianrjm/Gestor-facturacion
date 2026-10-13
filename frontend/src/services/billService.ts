@@ -94,3 +94,15 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
   
   return folioFactura;
 };
+
+export const getInvoiceById = async (id: string) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const result = await response.json();
+  if (!response.ok || result.status !== 'SUCCESS') {
+    throw new Error(result.message || 'Error al obtener los detalles de la factura');
+  }
+  return result.data; // Retorna { invoice, items }
+};

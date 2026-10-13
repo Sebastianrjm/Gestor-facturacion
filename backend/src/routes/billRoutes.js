@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getNewBillInitialization, getCurrencies, saveBill, generateBillPDF, updateInvoiceStatus, getDashboardData  } = require('../controllers/billController');
+const { getNewBillInitialization, getCurrencies, saveBill, generateBillPDF, updateInvoiceStatus, getDashboardData, getInvoiceById  } = require('../controllers/billController');
 const verifyToken = require('../middlewares/authMiddleware');
 
-// Ruta protegida para obtener los datos iniciales de una nueva factura
+// verifyToken sirve para proteger las rutas
+// Rutas fijas
 router.get('/dashboard', verifyToken, getDashboardData);
-router.patch('/:id/estado', verifyToken, updateInvoiceStatus);
 router.get('/nuevo', verifyToken, getNewBillInitialization);
 router.get('/divisas', verifyToken, getCurrencies);
+
+// Rutas dinamicas
+router.patch('/:id/estado', verifyToken, updateInvoiceStatus);
+router.get('/:id', verifyToken, getInvoiceById);
 router.post('/', verifyToken, saveBill);
 router.get('/:id/pdf', verifyToken, generateBillPDF);
 

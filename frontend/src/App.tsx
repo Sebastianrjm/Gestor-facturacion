@@ -25,6 +25,10 @@ export default function App() {
             <Route path="/nueva-factura" element={<DashboardLayout />}>
               <Route index element={<NewBill />} />
             </Route>
+
+            <Route path="/editar-factura" element={<DashboardLayout />}>
+              <Route index element={<NewBill />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />

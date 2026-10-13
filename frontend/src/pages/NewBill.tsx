@@ -24,9 +24,13 @@ interface BillFormData {
 export default function NewBill() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const plantillaId = searchParams.get('plantilla') || 'MODERNO';
+  const [plantillaId, setPlantillaId] = useState<string>(
+    searchParams.get('plantilla') || 'MODERNO'
+  );
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
   const [presupuestoId, setPresupuestoId] = useState<string | null>(null);
+  const invoiceId = searchParams.get('id'); 
+  const isEditing = Boolean(invoiceId);
 
   const [formData, setFormData] = useState<BillFormData>({
     cliente: '',
@@ -95,31 +99,67 @@ export default function NewBill() {
     const fetchInitialData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/v1/presupuestos/nuevo', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+
+        if (isEditing && invoiceId) {
+          // --- MODO EDICIÓN: Traer datos de la factura existente ---
+          const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${invoiceId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const result = await response.json();
+
+          if (result.status === 'SUCCESS') {
+            const { invoice, items: fetchedItems } = result.data;
+            setFormData({
+              cliente: invoice.cliente_nombre || '',
+              correo: invoice.cliente_correo || '',
+              numeroFactura: invoice.folio || '',
+              fechaEmision: invoice.fecha_emision ? invoice.fecha_emision.split('T')[0] : '',
+              fechaVencimiento: invoice.fecha_vencimiento ? invoice.fecha_vencimiento.split('T')[0] : '',
+              tasaCambio: invoice.tasa_cambio_aplicada || 1.0000,
+              notas: invoice.notas_comerciales || '',
+              estadoFactura: invoice.estado || 'BORRADOR'
+            });
+            setMonedaPrincipal(invoice.moneda_codigo || 'USD');
+            setProfileImage(invoice.logo_url);
+           if (invoice.plantilla_id) {
+              setPlantillaId(invoice.plantilla_id);
+            }
+
+
+            if (fetchedItems && fetchedItems.length > 0) {
+              setItems(fetchedItems.map((item: any, idx: number) => ({
+                id: item.id || idx.toString(),
+                descripcion: item.descripcion,
+                cantidad: Number(item.cantidad) || 1,
+                precioUnitario: Number(item.precioUnitario) || 0
+              })));
+            }
           }
-        });
-        const result = await response.json();
-        
-        if (result.status === 'SUCCESS') {
-          // Actualizas tu formData y estado con lo que devolvió la API
-          setFormData(prev => ({
-            ...prev,
-            numeroFactura: result.data.numeroFactura,
-            estadoFactura: result.data.estadoFactura,
-            emisor: result.data.emisor,
-            nombreUsuario: result.data.nombreUsuario,
-          }));
-          setProfileImage(result.data.profileImage);
+        } else {
+          // --- MODO CREACIÓN: Inicializar nueva factura ---
+          const response = await fetch('http://localhost:5000/api/v1/presupuestos/nuevo', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const result = await response.json();
+          
+          if (result.status === 'SUCCESS') {
+            setFormData(prev => ({
+              ...prev,
+              numeroFactura: result.data.numeroFactura,
+              estadoFactura: result.data.estadoFactura,
+              emisor: result.data.emisor,
+              nombreUsuario: result.data.nombreUsuario,
+            }));
+            setProfileImage(result.data.profileImage);
+          }
         }
       } catch (error) {
-        console.error('Error al cargar datos iniciales de la factura:', error);
+        console.error('Error al cargar datos de la factura:', error);
       }
     };
 
     fetchInitialData();
-  }, []);
+  }, [isEditing, invoiceId]);
 
   // fetch monedas
 
