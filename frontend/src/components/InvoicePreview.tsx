@@ -20,6 +20,8 @@ interface InvoicePreviewProps {
     emisor: string;
     nombreUsuario: string;
     notas: string;
+    aplicaImpuesto: string;
+    impuestoPorcentaje: number;
   };
   items: ItemDetalle[];
   monedaPrincipal: string;
@@ -36,12 +38,16 @@ export default function InvoicePreview({
   plantillaId,
   profileImage,
 }: InvoicePreviewProps) {
-  const subtotal = items.reduce(
-    (acc, item) => acc + (item.cantidad || 0) * (item.precioUnitario || 0),
-    0
-  );
-  const tasaNumerica = parseFloat(String(formData.tasaCambio)) || 0;
-  const totalReferencial = tasaNumerica > 0 ? subtotal * tasaNumerica : 0;
+
+  // 1. Cálculos de totales
+  const subtotal = items.reduce((acc, item) => acc + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
+  const porcentajeImpuesto = formData.aplicaImpuesto ? (Number(formData.impuestoPorcentaje) || 0) : 0;
+  const montoImpuesto = (subtotal * porcentajeImpuesto) / 100;
+  const totalPagar = subtotal + montoImpuesto;
+
+  // Para el cálculo referencial (si usas tasa de cambio)
+  const tasaNumerica = Number(formData.tasaCambio) || 0;
+  const totalReferencial = tasaNumerica > 0 ? totalPagar * tasaNumerica : 0;
 
   const templateClass = `template-${(plantillaId || 'moderno').toLowerCase()}`;
 
@@ -68,8 +74,10 @@ export default function InvoicePreview({
         </div>
 
         <div className="invoice-info-texts">
+          <strong>Datos del emisor:</strong>
           <p className="invoice-info-text">EMISOR · {formData.emisor || 'Emisor'}</p>
           <p className="invoice-info-text">NOMBRE DEL EMISOR · {formData.nombreUsuario || 'Nombre usuario'}</p>
+          <strong>Datos del cliente:</strong>
           <p className="invoice-info-text">CLIENTE · {formData.cliente || 'Nombre del Cliente'}</p>
           <p className="invoice-info-text">EMAIL CLIENTE · {formData.correo || 'correo@empresa.com'}</p>
           <p className="invoice-info-text">Emisión: {formData.fechaEmision || 'YYYY-MM-DD'}</p>
@@ -111,10 +119,24 @@ export default function InvoicePreview({
           <span>Subtotal:</span>
           <strong>${subtotal.toFixed(2)} {monedaPrincipal}</strong>
         </div>
+
+        {montoImpuesto > 0 && (
+          <div className="invoice-total-row">
+            <span>Impuesto ({porcentajeImpuesto}%):</span>
+            <strong>${montoImpuesto.toFixed(2)} {monedaPrincipal}</strong>
+          </div>
+        )}
+
+        <div className="invoice-total-row">
+          <span>Tasa aplicada:</span>
+          <strong>{formData.tasaCambio} {monedaReferencia}</strong>
+        </div>
+
         <div className="invoice-total-row-final">
           <span>Total a pagar:</span>
-          <strong>${subtotal.toFixed(2)} {monedaPrincipal}</strong>
+          <strong>${totalPagar.toFixed(2)} {monedaPrincipal}</strong>
         </div>
+        
 
         {totalReferencial > 0 && (
           <div className="invoice-ref-box">

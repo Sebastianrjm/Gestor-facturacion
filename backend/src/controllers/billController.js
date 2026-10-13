@@ -218,6 +218,9 @@ const saveBill = async (req, res) => {
             fechaEmision, 
             fechaVencimiento, 
             notasComerciales,
+            aplicaImpuesto,
+            impuestoPorcentaje,
+            monedaReferencia,
             items               
         } = req.body;
 
@@ -249,31 +252,44 @@ const saveBill = async (req, res) => {
             }
         }
 
+        // Cálculos de impuestos seguros en backend
+        const subNum = Number(subtotal) || 0;
+        const aplicaImp = Boolean(aplicaImpuesto);
+        const porcImp = aplicaImp ? (Number(impuestoPorcentaje) || 0) : 0;
+        const montoImpuesto = (subNum * porcImp) / 100;
+        const totalCalculado = subNum + montoImpuesto;
+
         // 3. Insertar o Actualizar la cabecera (UPSERT usando ON CONFLICT)
         const presupuestoQuery = `
             INSERT INTO presupuestos (
                 emisor_id, cliente_id, folio, estado, moneda_codigo, 
-                tasa_cambio_aplicada, subtotal, total, plantilla_id, 
-                fecha_emision, fecha_vencimiento, notas_comerciales
-            ) VALUES ($1, $2, $3, 'BORRADOR', $4, $5, $6, $7, $8, $9, $10, $11)
+                tasa_cambio_aplicada, subtotal, monto_impuesto, total, plantilla_id, 
+                fecha_emision, fecha_vencimiento, notas_comerciales,
+                aplica_impuesto, impuesto_porcentaje, moneda_referencia
+            ) VALUES ($1, $2, $3, 'BORRADOR', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             ON CONFLICT (folio) DO UPDATE SET
                 cliente_id = EXCLUDED.cliente_id,
                 moneda_codigo = EXCLUDED.moneda_codigo,
                 tasa_cambio_aplicada = EXCLUDED.tasa_cambio_aplicada,
                 subtotal = EXCLUDED.subtotal,
+                monto_impuesto = EXCLUDED.monto_impuesto,
                 total = EXCLUDED.total,
                 plantilla_id = EXCLUDED.plantilla_id,
                 fecha_emision = EXCLUDED.fecha_emision,
                 fecha_vencimiento = EXCLUDED.fecha_vencimiento,
                 notas_comerciales = EXCLUDED.notas_comerciales,
+                aplica_impuesto = EXCLUDED.aplica_impuesto,
+                impuesto_porcentaje = EXCLUDED.impuesto_porcentaje,
+                moneda_referencia = EXCLUDED.moneda_referencia,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id, folio;
         `;
         
         const presupuestoValues = [
             emisorId, clienteId, folio, monedaCodigo, 
-            tasaCambioAplicada || 1.0000, subtotal, total, plantillaId, 
-            fechaEmision, fechaVencimiento, notasComerciales
+            tasaCambioAplicada || 1.0000, subNum, montoImpuesto, totalCalculado, plantillaId, 
+            fechaEmision, fechaVencimiento, notasComerciales,
+            aplicaImp, porcImp, monedaReferencia 
         ];
 
         const presupuestoResult = await client.query(presupuestoQuery, presupuestoValues);
@@ -322,7 +338,7 @@ const generateBillPDF = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Obtener cabecera de presupuesto, emisor, cliente y usuario
+        // 1. Obtener cabecera de presupuesto (incluye aplica_impuesto e impuesto_porcentaje gracias a p.*)
         const presupuestoQuery = `
             SELECT p.*, e.razon_social AS emisor_nombre, e.identificacion_fiscal AS emisor_rif, 
                    e.telefono AS emisor_telefono, e.email AS emisor_email, e.direccion AS emisor_direccion, e.logo_url,
@@ -358,9 +374,11 @@ const generateBillPDF = async (req, res) => {
         }));
 
         // 3. Cálculos de montos y tasa referencial
-        const subtotalNum = Number(factura.subtotal);
+        const subtotalNum = Number(factura.subtotal) || 0;
+        const totalNum = Number(factura.total) || 0;
+        const montoImpuestoNum = Number(factura.monto_impuesto) || 0;
         const tasaNumerica = Number(factura.tasa_cambio_aplicada) || 0;
-        const totalReferencial = tasaNumerica > 0 ? subtotalNum * tasaNumerica : 0;
+        const totalReferencial = tasaNumerica > 0 ? totalNum * tasaNumerica : 0;
 
         // 4. Leer estilos CSS y plantilla Handlebars del disco
         const cssPath = path.join(__dirname, '../../../frontend/src/assets/InvoicePreview.css');
@@ -379,6 +397,12 @@ const generateBillPDF = async (req, res) => {
             cliente_email: factura.cliente_email || 'correo@empresa.com',
             items,
             subtotal: subtotalNum.toFixed(2),
+            monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) : null,
+            porcentaje_impuesto: factura.impuesto_porcentaje || 0,
+            aplica_impuesto: factura.aplica_impuesto,
+            total: totalNum.toFixed(2),
+            tasa_aplicada: tasaNumerica,
+            moneda_referencia: factura.moneda_referencia,
             total_referencial: totalReferencial > 0 ? totalReferencial.toLocaleString('es-VE', { minimumFractionDigits: 2 }) : null,
             plantillaClass: `template-${(factura.plantilla_id || 'moderno').toLowerCase()}`,
             customCss,
@@ -418,14 +442,13 @@ const getInvoiceById = async (req, res) => {
         const { id } = req.params;
         const userId = req.user.userId || req.user.id;
 
-        // 1. Obtener emisor del usuario logueado
         const userRes = await db.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
         if (userRes.rows.length === 0) {
             return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // 2. Buscar la factura asegurando que pertenezca al emisor
+        // p.* ya trae automáticamente aplica_impuesto e impuesto_porcentaje para el formulario
         const invoiceQuery = `
             SELECT 
                 p.*, 
@@ -441,7 +464,6 @@ const getInvoiceById = async (req, res) => {
             return res.status(404).json({ status: 'ERROR', message: 'Factura no encontrada' });
         }
 
-        // 3. Buscar los ítems (detalles) de la factura
         const itemsQuery = `
             SELECT id, descripcion, cantidad, precio_unitario AS "precioUnitario", subtotal_linea AS "subtotalLinea"
             FROM presupuesto_detalles

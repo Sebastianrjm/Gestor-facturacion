@@ -30,8 +30,10 @@
             </div>
 
             <div class="invoice-info-texts">
+                <strong>Datos del emisor:</strong>
                 <p class="invoice-info-text">EMISOR · {{emisor_nombre}}</p>
                 <p class="invoice-info-text">NOMBRE DEL EMISOR · {{nombre_usuario}}</p>
+                <strong>Datos del cliente:</strong>
                 <p class="invoice-info-text">CLIENTE · {{cliente_nombre}}</p>
                 <p class="invoice-info-text">EMAIL CLIENTE · {{cliente_email}}</p>
                 <p class="invoice-info-text">Emisión: {{fechaEmisionFormateada}}</p>
@@ -67,15 +69,30 @@
                 <span>Subtotal:</span>
                 <strong>${{subtotal}} {{moneda_codigo}}</strong>
             </div>
+
+            {{#if monto_impuesto}}
+            <div class="invoice-total-row">
+                <span>Impuesto ({{porcentaje_impuesto}}%): </span>
+                <strong>${{monto_impuesto}} {{moneda_codigo}}</strong>
+            </div>
+            {{/if}}
+
+            {{#if tasa_aplicada}}
+            <div class="invoice-total-row">
+                <span>Tasa aplicada: </span>
+                <strong>{{tasa_aplicada}} {{moneda_referencia}}</strong>
+            </div>
+            {{/if}}
+
             <div class="invoice-total-row-final">
                 <span>Total a pagar:</span>
-                <strong>${{subtotal}} {{moneda_codigo}}</strong>
+                <strong>${{total}} {{moneda_codigo}}</strong>
             </div>
 
             {{#if total_referencial}}
             <div class="invoice-ref-box">
                 <span class="invoice-ref-label">Monto Referencial:</span>
-                <strong class="invoice-ref-value">{{total_referencial}} VES</strong>
+                <strong class="invoice-ref-value">{{total_referencial}} {{moneda_referencia}}</strong>
             </div>
             {{/if}}
         </div>

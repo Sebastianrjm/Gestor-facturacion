@@ -19,6 +19,8 @@ interface BillFormData {
   tasaCambio: number;
   notas: string,
   estadoFactura?: string;
+  aplicaImpuesto: boolean;
+  impuestoPorcentaje: number | string;
 }
 
 export default function NewBill() {
@@ -40,7 +42,9 @@ export default function NewBill() {
     fechaVencimiento: '',
     tasaCambio: '',
     notas: '',
-    estadoFactura: ""
+    estadoFactura: "",
+    aplicaImpuesto: false,
+    impuestoPorcentaje: 16,
   });
 
   const [monedaPrincipal, setMonedaPrincipal] = useState('USD');
@@ -93,6 +97,14 @@ export default function NewBill() {
     }));
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      aplicaImpuesto: checked,
+    }));
+  };
+
   // fetch data inicial al entrar
 
   useEffect(() => {
@@ -117,7 +129,9 @@ export default function NewBill() {
               fechaVencimiento: invoice.fecha_vencimiento ? invoice.fecha_vencimiento.split('T')[0] : '',
               tasaCambio: invoice.tasa_cambio_aplicada || 1.0000,
               notas: invoice.notas_comerciales || '',
-              estadoFactura: invoice.estado || 'BORRADOR'
+              estadoFactura: invoice.estado || 'BORRADOR',
+              aplicaImpuesto: Boolean(invoice.aplica_impuesto),
+              impuestoPorcentaje: invoice.impuesto_porcentaje ?? 16,
             });
             setMonedaPrincipal(invoice.moneda_codigo || 'USD');
             setProfileImage(invoice.logo_url);
@@ -191,15 +205,20 @@ export default function NewBill() {
     fetchCurrencies();
   }, []);
 
-  const calcularSubtotal = () => {
-    return items.reduce((acc, item) => acc + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
+  const calcularTotales = () => {
+    const subtotal = items.reduce((acc, item) => acc + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
+    const porcentaje = formData.aplicaImpuesto ? (Number(formData.impuestoPorcentaje) || 0) : 0;
+    const montoImpuesto = (subtotal * porcentaje) / 100;
+    const total = subtotal + montoImpuesto;
+
+    return { subtotal, montoImpuesto, total };
   };
 
   // fetch para guardar 
 
   const handleSaveAndDownload = async () => {
     try {
-      const subtotalCalculado = calcularSubtotal();
+      const { subtotal, total } = calcularTotales();
 
       const folioGenerado = await saveAndDownloadBill({
         clienteNombre: formData.cliente,
@@ -207,19 +226,20 @@ export default function NewBill() {
         folio: formData.numeroFactura,
         monedaCodigo: monedaPrincipal,
         tasaCambioAplicada: Number(formData.tasaCambio) || 1.0000,
-        subtotal: subtotalCalculado,
-        total: subtotalCalculado, // Puedes sumarle impuestos aquí si los implementas
+        subtotal: subtotal,
+        total: total,
         plantillaId: plantillaId,
         fechaEmision: formData.fechaEmision,
         fechaVencimiento: formData.fechaVencimiento,
         notasComerciales: formData.notas,
+        aplicaImpuesto: formData.aplicaImpuesto,
+        monedaReferencia: monedaReferencia,               
+        impuestoPorcentaje: Number(formData.impuestoPorcentaje) || 0, 
         items: items
       });
 
       console.log(`Factura ${folioGenerado} procesada con éxito`);
       
-      // Opcional: Redirigir al usuario al dashboard o lista de facturas
-      // navigate('/dashboard');
 
     } catch (error: any) {
       console.error('Error en el proceso:', error);
@@ -307,6 +327,34 @@ export default function NewBill() {
                 placeholder="1"
                 required
               />
+
+              {/* Checkbox conectado al formData */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <input
+                  type="checkbox"
+                  id="aplicaImpuesto"
+                  name="aplicaImpuesto"
+                  checked={formData.aplicaImpuesto}
+                  onChange={handleCheckboxChange}
+                  style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                />
+                <label htmlFor="aplicaImpuesto" style={{ fontSize: '13px', color: '#172338', fontWeight: '500', cursor: 'pointer' }}>
+                  Aplicar impuesto (%)
+                </label>
+              </div>
+
+              {/* Input condicional conectado al formData */}
+              {formData.aplicaImpuesto && (
+                <InputField
+                  label="Porcentaje de impuesto"
+                  type="number"
+                  name="impuestoPorcentaje"
+                  value={formData.impuestoPorcentaje}
+                  onChange={handleChange}
+                  placeholder="16"
+                  required
+                />
+              )}
             </div>
 
             <h2 style={styles.h2Separator}>03   Concepto de la factura</h2>
