@@ -20,16 +20,14 @@ export interface BillPayload {
   }>;
 }
 
-export const getDashboardData = async () => {
+export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') => {
   const token = localStorage.getItem('token');
-  const response = await fetch('http://localhost:5000/api/v1/presupuestos/dashboard', {
+  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const result = await response.json();
-  if (!response.ok || result.status !== 'SUCCESS') {
-    throw new Error(result.message || 'Error al cargar datos del dashboard');
-  }
-  return result.data; // Retorna { metrics: { cobradoMes, pendientePago, facturasEmitidas }, invoices: [...] }
+  if (result.status !== 'SUCCESS') throw new Error(result.message);
+  return result.data; 
 };
 
 export const updateInvoiceStatus = async (id: string, estado: string) => {

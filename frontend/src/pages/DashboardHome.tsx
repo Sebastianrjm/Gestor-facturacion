@@ -7,6 +7,14 @@ import type { SelectOption } from '../components/CustomSelect';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardData, updateInvoiceStatus } from '../services/billService';
 
+const ESTADOS_FILTRO: SelectOption[] = [
+  { label: 'Todos los estados', value: 'TODOS' },
+  { label: 'Borrador', value: 'BORRADOR' },
+  { label: 'Enviado', value: 'ENVIADO' },
+  { label: 'Aprobado', value: 'APROBADO' },
+  { label: 'Rechazado', value: 'RECHAZADO' },
+  { label: 'Vencido', value: 'VENCIDO' },
+];
 
 const ESTADOS_FACTURA: SelectOption[] = [
   { label: 'Borrador', value: 'BORRADOR' },
@@ -20,17 +28,25 @@ export default function DashboardHome() {
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState({ cobradoMes: 0, pendientePago: 0, facturasEmitidas: 0 });
   const [invoices, setInvoices] = useState<any[]>([]);
+  
+  // Estados para paginación y filtros
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [selectedStatus, setSelectedStatus] = useState<string>('TODOS');
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
+  // Cargar datos al cambiar de página o de filtro
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const data = await getDashboardData();
+        const data = await getDashboardData(page, 10, selectedStatus);
         setMetrics(data.metrics);
         setInvoices(data.invoices);
+        setTotalPages(data.pagination.totalPages);
       } catch (err: any) {
         console.error('Error al cargar información:', err);
         setError(err.message || 'No se pudo cargar la información.');
@@ -40,19 +56,17 @@ export default function DashboardHome() {
     };
 
     fetchDashboard();
-  }, []);
+  }, [page, selectedStatus]);
 
-  // Manejar cambio de estado de una factura directamente en la lista
+  // Manejar cambio de estado de una factura
   const handleStatusChange = async (id: string, nuevoEstado: string) => {
     try {
       const responseData = await updateInvoiceStatus(id, nuevoEstado);
       
-      // 1. Actualizamos localmente el estado en la tabla de facturas
       setInvoices((prev) =>
         prev.map((inv) => (inv.id === id ? { ...inv, estado: nuevoEstado } : inv))
       );
 
-      // 2. Actualizamos automáticamente las tarjetas de métricas con los datos frescos del backend
       if (responseData.metrics) {
         setMetrics(responseData.metrics);
       }
@@ -66,8 +80,7 @@ export default function DashboardHome() {
     navigate(`/nueva-factura?plantilla=${templateId}`);
   };
 
-   //1. Manejo visible de la carga (evita devolver null)
-  if (loading) {
+  if (loading && invoices.length === 0) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>Cargando datos del dashboard...</h2>
@@ -75,7 +88,6 @@ export default function DashboardHome() {
     );
   }
 
-  // 2. Manejo visible del error
   if (error) {
     return (
       <div style={{ padding: '2rem', color: 'red' }}>
@@ -85,14 +97,11 @@ export default function DashboardHome() {
     );
   }
 
-  // 3. Renderizado de tus pantallas/tarjetas reales
   return (
     <div style={styles.header}>
       <div style={styles.header}> 
         <h1 className="title">Mis facturas</h1>
-
-        <p className="text">Un vistazo a tu negocio · </p>
-
+        <p className="text">Un vistazo a tu negocio</p>
         <Button variant="primary" onClick={() => setIsSidebarOpen(true)}>
           Nueva factura
         </Button>
@@ -114,34 +123,45 @@ export default function DashboardHome() {
         </div>
       </div>
 
-      {/* Panel de facturas */}
+      {/* Panel de facturas con Filtro de Estado */}
       <div style={styles.principalPanel}>
-        <div style={{display: "flex"}}>
-          <div style={{marginRight: "100px"}}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ display: "flex", gap: "100px" }}>
             <p style={styles.principalPanelText}>FACTURA / CLIENTE</p>
-          </div>
-          <div>
             <p style={styles.principalPanelText}>IMPORTE / ESTADO</p>
+          </div>
+          
+          {/* Selector de filtro por estado */}
+          <div style={{ width: '200px' }}>
+            <CustomSelect
+              label="Filtrar por estado"
+              value={selectedStatus}
+              options={ESTADOS_FILTRO}
+              onChange={(val) => {
+                setSelectedStatus(val);
+                setPage(1); // Reiniciar a la página 1 al filtrar
+              }}
+            />
           </div>
         </div>
 
-        {/* Cards de las facturas */}
+        {/* Listado de Facturas */}
         <div style={styles.principalPanelParent}>
           {invoices.length === 0 ? (
             <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
-              No tienes facturas registradas todavía. ¡Crea la primera!
+              No se encontraron facturas con este criterio.
             </p>
           ) : (
             invoices.map((inv) => (
               <div key={inv.id} style={styles.principalPanelChild}>
-                <div style={{gap: "16px", display: "flex", flexDirection: "column"}}>
+                <div style={{ gap: "16px", display: "flex", flexDirection: "column" }}>
                   <p className='text'><strong>{inv.folio}</strong> · {inv.cliente_nombre || 'Cliente general'}</p>
                   <Button variant="secondaryTiny" onClick={() => navigate(`/editar-factura?id=${inv.id}`)}>
                     Editar factura
                   </Button>
                 </div>
-                <div style={{display: "flex", alignItems: "center"}}>
-                  <p style={{marginRight: "20px"}} className='text'>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <p style={{ marginRight: "20px" }} className='text'>
                     ${Number(inv.total).toFixed(2)} {inv.moneda_codigo}
                   </p>
                   <CustomSelect
@@ -155,16 +175,34 @@ export default function DashboardHome() {
             ))
           )}
         </div>
-        
+
+        {/* Controles de Paginación */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+          <Button 
+            variant="tertiaryTiny" 
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+          >
+            Anterior
+          </Button>
+          <span className='text' style={{ fontWeight: '600' }}>
+            Página {page} de {totalPages || 1}
+          </span>
+          <Button 
+            variant="tertiaryTiny" 
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page >= totalPages}
+          >
+            Siguiente
+          </Button>
+        </div>
       </div>
 
-      {/* 4. Renderizado del componente Sidebar */}
       <TemplateSidebar
         open={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onSelectTemplate={handleSelectTemplate}
       />
-
     </div>
   );
 }
@@ -184,17 +222,6 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "12px",
     display: "flex",
     flexDirection: "column"
-  },
-  cardTitle: {
-    fontSize: '0.875rem',
-    color: '#64748b',
-  },
-  cardValue: {
-    fontSize: '1.75rem',
-    fontWeight: 'bold',
-    color: '#0f172a',
-    marginTop: '0.5rem',
-    margin: 0,
   },
   header: {
     display: "flex",

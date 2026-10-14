@@ -8,15 +8,21 @@ const getDashboardData = async (req, res) => {
     const client = await db.pool.connect();
     try {
         const userId = req.user.userId || req.user.id;
+        
+        // 1. Obtener parámetros de paginación y filtro desde la query string
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+        const statusFilter = req.query.status; // Ej: 'BORRADOR', 'ENVIADO', etc.
 
-        // 1. Obtener emisor del usuario
+        // 2. Obtener emisor del usuario
         const userRes = await client.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
         if (userRes.rows.length === 0) {
             return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // 2. Calcular métricas usando los valores reales del ENUM de la base de datos
+        // 3. Calcular métricas globales (se mantienen intactas para las tarjetas superiores)
         const metricsQuery = `
             SELECT 
                 COALESCE(SUM(CASE WHEN estado::text = 'APROBADO' AND EXTRACT(MONTH FROM fecha_emision) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_emision) = EXTRACT(YEAR FROM CURRENT_DATE) THEN total ELSE 0 END), 0) AS cobrado_mes,
@@ -28,8 +34,8 @@ const getDashboardData = async (req, res) => {
         const metricsRes = await client.query(metricsQuery, [emisorId]);
         const metrics = metricsRes.rows[0];
 
-        // 3. Obtener el listado de facturas optimizado
-        const invoicesQuery = `
+        // 4. Construir consulta base para las facturas con filtro opcional de estado
+        let invoicesQuery = `
             SELECT 
                 p.id,
                 p.folio,
@@ -40,9 +46,29 @@ const getDashboardData = async (req, res) => {
             FROM presupuestos p
             LEFT JOIN clientes c ON p.cliente_id = c.id
             WHERE p.emisor_id = $1
-            ORDER BY p.created_at DESC;
         `;
-        const invoicesRes = await client.query(invoicesQuery, [emisorId]);
+
+        const queryParams = [emisorId];
+        let paramIndex = 2;
+
+        // Aplicar filtro si viene especificado y no es 'TODOS'
+        if (statusFilter && statusFilter !== 'TODOS') {
+            invoicesQuery += ` AND p.estado::text = $${paramIndex}`;
+            queryParams.push(statusFilter);
+            paramIndex++;
+        }
+
+        // 5. Contar el total de registros filtrados (para calcular las páginas totales en el frontend)
+        const countQueryText = `SELECT COUNT(*) FROM (${invoicesQuery}) AS sub`;
+        const countRes = await client.query(countQueryText, queryParams);
+        const totalInvoices = parseInt(countRes.rows[0].count, 10);
+        const totalPages = Math.ceil(totalInvoices / limit) || 1;
+
+        // 6. Agregar ordenamiento, límite y desplazamiento (Paginación)
+        invoicesQuery += ` ORDER BY p.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        queryParams.push(limit, offset);
+
+        const invoicesRes = await client.query(invoicesQuery, queryParams);
 
         res.status(200).json({
             status: 'SUCCESS',
@@ -52,7 +78,13 @@ const getDashboardData = async (req, res) => {
                     pendientePago: Number(metrics.pendiente_pago),
                     facturasEmitidas: Number(metrics.facturas_emitidas)
                 },
-                invoices: invoicesRes.rows
+                invoices: invoicesRes.rows,
+                pagination: {
+                    totalInvoices,
+                    totalPages,
+                    currentPage: page,
+                    limit
+                }
             }
         });
 

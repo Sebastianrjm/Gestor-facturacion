@@ -60,6 +60,13 @@ export const Button: React.FC<ButtonProps> = ({
       boxShadow: isHovered && !disabled ? '0 4px 12px rgba(255, 140, 38, 0.25)' : 'none',
       padding: '6px 10px',
     },
+    tertiaryTiny: {
+      backgroundColor: isHovered && !disabled ? '#0ea5e940' : 'transparent',
+      color: '#265CF0',
+      borderColor: "265CF0",
+      boxShadow: isHovered && !disabled ? '0 4px 12px rgba(14, 165, 233, 0.25)' : 'none',
+      padding: '6px 10px',
+    },
   };
 
   const combinedStyles: CSSProperties = {
