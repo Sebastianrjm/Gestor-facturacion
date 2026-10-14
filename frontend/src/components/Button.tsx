@@ -41,10 +41,10 @@ export const Button: React.FC<ButtonProps> = ({
       boxShadow: isHovered && !disabled ? '0 4px 12px rgba(14, 165, 233, 0.25)' : 'none',
     },
     secondary: {
-      backgroundColor: isHovered && !disabled ? '#FFD9B7' : '#fffaf6',
-      color: '#FF800E',
-      border: "0.2px solid #FF800E",
-      boxShadow: isHovered && !disabled ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
+      backgroundColor: isHovered && !disabled ? '#ff8c26' : '#FF800E',
+      color: '#ffffff',
+      borderColor: "transparent",
+      boxShadow: isHovered && !disabled ? '0 4px 12px rgba(255, 140, 38, 0.25)' : 'none',
     },
     primaryTiny: {
       backgroundColor: isHovered && !disabled ? '#3b6cf1' : '#265CF0',
@@ -54,10 +54,10 @@ export const Button: React.FC<ButtonProps> = ({
       padding: '6px 10px',
     },
     secondaryTiny: {
-      backgroundColor: isHovered && !disabled ? '#FFD9B7' : '#fffaf6',
-      color: '#FF800E',
-      border: "0.2px solid #FF800E",
-      boxShadow: isHovered && !disabled ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
+      backgroundColor: isHovered && !disabled ? '#ff8c26' : '#FF800E',
+      color: '#ffffff',
+      borderColor: "transparent",
+      boxShadow: isHovered && !disabled ? '0 4px 12px rgba(255, 140, 38, 0.25)' : 'none',
       padding: '6px 10px',
     },
   };
