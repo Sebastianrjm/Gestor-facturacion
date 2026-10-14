@@ -21,6 +21,11 @@ interface BillFormData {
   estadoFactura?: string;
   aplicaImpuesto: boolean;
   impuestoPorcentaje: number | string;
+  numeroFiscal: string;
+  direccionCliente: string;
+  numeroCliente: string;
+  emisor: string;
+  nombreUsuario: string
 }
 
 export default function NewBill() {
@@ -45,6 +50,9 @@ export default function NewBill() {
     estadoFactura: "",
     aplicaImpuesto: false,
     impuestoPorcentaje: 16,
+    numeroFiscal: '',
+    direccionCliente: '',
+    numeroCliente: "+"
   });
 
   const [monedaPrincipal, setMonedaPrincipal] = useState('USD');
@@ -124,6 +132,9 @@ export default function NewBill() {
             setFormData({
               cliente: invoice.cliente_nombre || '',
               correo: invoice.cliente_correo || '',
+              numeroFiscal: invoice.cliente_rif || '',          
+              direccionCliente: invoice.cliente_direccion || '',
+              numeroCliente: invoice.cliente_telefono || '',
               numeroFactura: invoice.folio || '',
               fechaEmision: invoice.fecha_emision ? invoice.fecha_emision.split('T')[0] : '',
               fechaVencimiento: invoice.fecha_vencimiento ? invoice.fecha_vencimiento.split('T')[0] : '',
@@ -132,9 +143,11 @@ export default function NewBill() {
               estadoFactura: invoice.estado || 'BORRADOR',
               aplicaImpuesto: Boolean(invoice.aplica_impuesto),
               impuestoPorcentaje: invoice.impuesto_porcentaje ?? 16,
+              emisor: invoice.emisor,
+              nombreUsuario: invoice.nombreUsuario
             });
             setMonedaPrincipal(invoice.moneda_codigo || 'USD');
-            setProfileImage(invoice.logo_url);
+            setProfileImage(invoice.profileImage);
            if (invoice.plantilla_id) {
               setPlantillaId(invoice.plantilla_id);
             }
@@ -223,6 +236,9 @@ export default function NewBill() {
       const folioGenerado = await saveAndDownloadBill({
         clienteNombre: formData.cliente,
         clienteCorreo: formData.correo,
+        clienteFiscal: formData.numeroFiscal,         
+        clienteDireccion: formData.direccionCliente,  
+        clienteTelefono: formData.numeroCliente,
         folio: formData.numeroFactura,
         monedaCodigo: monedaPrincipal,
         tasaCambioAplicada: Number(formData.tasaCambio) || 1.0000,
@@ -278,6 +294,36 @@ export default function NewBill() {
                 value={formData.correo}
                 onChange={handleChange}
                 placeholder="cliente@cliente.com"
+                required
+              />
+
+              <InputField
+                label="Numero fiscal del cliente"
+                type="text"
+                name="numeroFiscal"
+                value={formData.numeroFiscal}
+                onChange={handleChange}
+                placeholder="J-12345678"
+                required
+              />
+
+              <InputField
+                label="Direccion del cliente"
+                type="text"
+                name="direccionCliente"
+                value={formData.direccionCliente}
+                onChange={handleChange}
+                placeholder="Calle 1, avenida 2"
+                required
+              />
+
+              <InputField
+                label="Número del cliente"
+                type="text"
+                name="numeroCliente"
+                value={formData.numeroCliente}
+                onChange={handleChange}
+                placeholder="+58 424-12345678"
                 required
               />
 

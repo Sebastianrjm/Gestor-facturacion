@@ -209,6 +209,9 @@ const saveBill = async (req, res) => {
         const { 
             clienteNombre,      
             clienteCorreo,      
+            clienteFiscal,      
+            clienteDireccion,   
+            clienteTelefono,    
             folio,              
             monedaCodigo,       
             tasaCambioAplicada, 
@@ -232,21 +235,56 @@ const saveBill = async (req, res) => {
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // 2. Gestionar cliente automáticamente (Buscar o crear)
+       // 2. Gestionar cliente automáticamente (Buscar por correo o nombre, y actualizar si cambió algo)
         let clienteId = null;
         if (clienteNombre) {
-            const clienteCheck = await client.query(
-                'SELECT id FROM clientes WHERE emisor_id = $1 AND nombre_comercial = $2',
-                [emisorId, clienteNombre]
-            );
+            let clienteCheck = { rows: [] };
+
+            //  Criterio principal: Buscar por correo (si fue provisto, es el más seguro)
+            if (clienteCorreo) {
+                clienteCheck = await client.query(
+                    'SELECT id FROM clientes WHERE emisor_id = $1 AND email = $2',
+                    [emisorId, clienteCorreo]
+                );
+            }
+
+            //  Criterio secundario: Si no se encontró por correo (o no vino correo), buscar por nombre comercial
+            if (clienteCheck.rows.length === 0) {
+                clienteCheck = await client.query(
+                    'SELECT id FROM clientes WHERE emisor_id = $1 AND nombre_comercial = $2',
+                    [emisorId, clienteNombre]
+                );
+            }
 
             if (clienteCheck.rows.length > 0) {
+                // Cliente encontrado: actualizamos sus datos por si variaron (nombre, dirección, teléfono, RIF)
                 clienteId = clienteCheck.rows[0].id;
+                await client.query(
+                    `UPDATE clientes 
+                     SET nombre_comercial = $1, email = $2, identificacion_fiscal = $3, direccion = $4, telefono = $5 
+                     WHERE id = $6`,
+                    [
+                        clienteNombre, 
+                        clienteCorreo || null, 
+                        clienteFiscal || null, 
+                        clienteDireccion || null, 
+                        clienteTelefono || null, 
+                        clienteId
+                    ]
+                );
             } else {
+                // Si no existe de ninguna forma, lo creamos nuevo
                 const nuevoClienteRes = await client.query(
-                    `INSERT INTO clientes (emisor_id, nombre_comercial, email) 
-                     VALUES ($1, $2, $3) RETURNING id`,
-                    [emisorId, clienteNombre, clienteCorreo || null]
+                    `INSERT INTO clientes (emisor_id, nombre_comercial, email, identificacion_fiscal, direccion, telefono) 
+                     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+                    [
+                        emisorId, 
+                        clienteNombre, 
+                        clienteCorreo || null, 
+                        clienteFiscal || null, 
+                        clienteDireccion || null, 
+                        clienteTelefono || null
+                    ]
                 );
                 clienteId = nuevoClienteRes.rows[0].id;
             }
@@ -286,10 +324,21 @@ const saveBill = async (req, res) => {
         `;
         
         const presupuestoValues = [
-            emisorId, clienteId, folio, monedaCodigo, 
-            tasaCambioAplicada || 1.0000, subNum, montoImpuesto, totalCalculado, plantillaId, 
-            fechaEmision, fechaVencimiento, notasComerciales,
-            aplicaImp, porcImp, monedaReferencia 
+            emisorId, 
+            clienteId, 
+            folio, 
+            monedaCodigo, 
+            tasaCambioAplicada || 1.0000, 
+            subNum, 
+            montoImpuesto, 
+            totalCalculado, 
+            plantillaId, 
+            fechaEmision, 
+            fechaVencimiento, 
+            notasComerciales,
+            aplicaImp, 
+            porcImp, 
+            monedaReferencia || 'VES'
         ];
 
         const presupuestoResult = await client.query(presupuestoQuery, presupuestoValues);
@@ -338,12 +387,12 @@ const generateBillPDF = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Obtener cabecera de presupuesto (incluye aplica_impuesto e impuesto_porcentaje gracias a p.*)
+        // 1. Obtener cabecera de presupuesto incluyendo todos los datos del cliente
         const presupuestoQuery = `
             SELECT p.*, e.razon_social AS emisor_nombre, e.identificacion_fiscal AS emisor_rif, 
                    e.telefono AS emisor_telefono, e.email AS emisor_email, e.direccion AS emisor_direccion, e.logo_url,
                    c.nombre_comercial AS cliente_nombre, c.identificacion_fiscal AS cliente_rif, 
-                   c.email AS cliente_email, c.direccion AS cliente_direccion,
+                   c.email AS cliente_email, c.direccion AS cliente_direccion, c.telefono AS cliente_telefono,
                    u.nombre AS nombre_usuario
             FROM presupuestos p
             JOIN emisores e ON p.emisor_id = e.id
@@ -388,13 +437,16 @@ const generateBillPDF = async (req, res) => {
         const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
         const compiledTemplate = handlebars.compile(htmlTemplate);
 
-        // 5. Inyectar datos preparados
+        // 5. Inyectar datos preparados para la plantilla HBS
         const htmlContent = compiledTemplate({
             ...factura,
             emisor_nombre: factura.emisor_nombre || 'Emisor',
             nombre_usuario: factura.nombre_usuario || 'Nombre usuario',
             cliente_nombre: factura.cliente_nombre || 'Nombre del Cliente',
             cliente_email: factura.cliente_email || 'correo@empresa.com',
+            cliente_rif: factura.cliente_rif || '',
+            cliente_direccion: factura.cliente_direccion || '',
+            cliente_telefono: factura.cliente_telefono || '',
             items,
             subtotal: subtotalNum.toFixed(2),
             monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) : null,
@@ -402,7 +454,7 @@ const generateBillPDF = async (req, res) => {
             aplica_impuesto: factura.aplica_impuesto,
             total: totalNum.toFixed(2),
             tasa_aplicada: tasaNumerica,
-            moneda_referencia: factura.moneda_referencia,
+            moneda_referencia: factura.moneda_referencia || 'VES',
             total_referencial: totalReferencial > 0 ? totalReferencial.toLocaleString('es-VE', { minimumFractionDigits: 2 }) : null,
             plantillaClass: `template-${(factura.plantilla_id || 'moderno').toLowerCase()}`,
             customCss,
@@ -448,14 +500,22 @@ const getInvoiceById = async (req, res) => {
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // p.* ya trae automáticamente aplica_impuesto e impuesto_porcentaje para el formulario
+        // Consulta unificada incluyendo datos del cliente, emisor y usuario
         const invoiceQuery = `
             SELECT 
                 p.*, 
                 c.nombre_comercial AS cliente_nombre, 
-                c.email AS cliente_correo
+                c.email AS cliente_correo,
+                c.identificacion_fiscal AS cliente_rif,
+                c.direccion AS cliente_direccion,
+                c.telefono AS cliente_telefono,
+                e.razon_social AS emisor,
+                e.logo_url AS "profileImage",
+                u.nombre AS "nombreUsuario"
             FROM presupuestos p
+            JOIN emisores e ON p.emisor_id = e.id
             LEFT JOIN clientes c ON p.cliente_id = c.id
+            LEFT JOIN usuarios u ON u.emisor_id = e.id
             WHERE p.id = $1 AND p.emisor_id = $2
         `;
         const invoiceRes = await db.query(invoiceQuery, [id, emisorId]);

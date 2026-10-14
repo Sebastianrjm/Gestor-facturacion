@@ -1,6 +1,9 @@
 export interface BillPayload {
   clienteNombre: string;
   clienteCorreo: string;
+  clienteFiscal: string;
+  clienteDireccion: string;
+  clienteTelefono: string;
   folio: string;
   monedaCodigo: string;
   tasaCambioAplicada: number;

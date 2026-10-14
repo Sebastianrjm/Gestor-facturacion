@@ -22,6 +22,9 @@ interface InvoicePreviewProps {
     notas: string;
     aplicaImpuesto: string;
     impuestoPorcentaje: number;
+    numeroFiscal: string;
+    direccionCliente: string;
+    numeroCliente: string
   };
   items: ItemDetalle[];
   monedaPrincipal: string;
@@ -79,7 +82,10 @@ export default function InvoicePreview({
           <p className="invoice-info-text">NOMBRE DEL EMISOR · {formData.nombreUsuario || 'Nombre usuario'}</p>
           <strong>Datos del cliente:</strong>
           <p className="invoice-info-text">CLIENTE · {formData.cliente || 'Nombre del Cliente'}</p>
-          <p className="invoice-info-text">EMAIL CLIENTE · {formData.correo || 'correo@empresa.com'}</p>
+          <p className="invoice-info-text">EMAIL DEL CLIENTE · {formData.correo || 'correo@empresa.com'}</p>
+          <p className="invoice-info-text">NÚMERO FISCAL · {formData.numeroFiscal || 'J-12345678'}</p>
+          <p className="invoice-info-text">DIRECCIÓN DEL CLIENTE · {formData.direccionCliente || 'Calle 1'}</p>
+          <p className="invoice-info-text">NÚMERO DEL CLIENTE · {formData.numeroCliente || '+58 424-12345678'}</p>
           <p className="invoice-info-text">Emisión: {formData.fechaEmision || 'YYYY-MM-DD'}</p>
           <p className="invoice-info-text">Vence: {formData.fechaVencimiento || 'YYYY-MM-DD'}</p>
         </div>
