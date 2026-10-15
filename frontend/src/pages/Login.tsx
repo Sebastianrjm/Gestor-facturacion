@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent, CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { LoginCredentials, User } from '../types/auth';
@@ -11,6 +11,7 @@ interface LoginProps {
 }
 
 export default function Login({ onLoginSuccess }: LoginProps) {
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -20,6 +21,11 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   });
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({

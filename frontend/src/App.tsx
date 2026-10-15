@@ -7,6 +7,7 @@ import DashboardHome from './pages/DashboardHome';
 import NewBill from './pages/NewBill';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
@@ -31,7 +32,7 @@ export default function App() {
             </Route>
           </Route>
 
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
