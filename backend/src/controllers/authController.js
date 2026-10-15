@@ -108,11 +108,22 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     // req.user viene extraído del middleware verifyToken
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.userId;
 
     const result = await db.query(
-      `SELECT u.id, u.nombre, u.email, u.created_at, 
-              e.id AS emisor_id, e.razon_social, e.identificacion_fiscal
+      `SELECT 
+         u.id AS usuario_id, 
+         u.nombre AS usuario_nombre, 
+         u.apellido AS usuario_apellido, 
+         u.email AS usuario_email, 
+         u.created_at, 
+         e.id AS emisor_id, 
+         e.razon_social, 
+         e.identificacion_fiscal,
+         e.direccion,
+         e.telefono,
+         e.condiciones_defecto,
+         e.logo_url
        FROM usuarios u
        INNER JOIN emisores e ON u.emisor_id = e.id
        WHERE u.id = $1`,
@@ -120,23 +131,90 @@ const getMe = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado.' });
+      return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado.' });
     }
 
+    const data = result.rows[0];
+
+    // Devolvemos el formato exacto que consume el frontend en MyProfile.tsx
     return res.json({
-      user: result.rows[0]
+      status: 'SUCCESS',
+      data: {
+        usuario: {
+          id: data.usuario_id,
+          nombre: data.usuario_nombre,
+          apellido: data.usuario_apellido,
+          email: data.usuario_email
+        },
+        emisor: {
+          id: data.emisor_id,
+          razon_social: data.razon_social,
+          identificacion_fiscal: data.identificacion_fiscal,
+          direccion: data.direccion,
+          telefono: data.telefono,
+          notas_defecto: data.notas_defecto,
+          logo_url: data.logo_url,
+          condiciones_defecto: data.condiciones_defecto
+        }
+      }
     });
+
   } catch (error) {
     console.error('Error al obtener perfil:', error);
-    return res.status(500).json({ error: 'Error interno del servidor.' });
+    return res.status(500).json({ status: 'ERROR', message: 'Error interno del servidor.' });
   }
 };
 
-// Recuerda incluir getMe en los exports al final del archivo:
+const updateProfile = async (req, res) => {
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    const userId = req.user.id || req.user.userId;
+    const { nombres, apellidos, correo, direccionEmpresa, numeroEmpresa, notasDefecto } = req.body;
+
+    // 1. Obtener el emisor_id asociado al usuario logueado
+    const userRes = await client.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
+    if (userRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado.' });
+    }
+    const emisorId = userRes.rows[0].emisor_id;
+
+    // 2. Actualizar los datos personales en la tabla usuarios
+    await client.query(
+      `UPDATE usuarios 
+       SET nombre = $1, apellido = $2, email = $3, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $4`,
+      [nombres, apellidos, correo, userId]
+    );
+
+    // 3. Actualizar los datos de la empresa en la tabla emisores
+    await client.query(
+      `UPDATE emisores 
+       SET direccion = $1, telefono = $2, condiciones_defecto = $3, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $4`,
+      [direccionEmpresa, numeroEmpresa, notasDefecto, emisorId]
+    );
+
+    await client.query('COMMIT');
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Perfil actualizado exitosamente.'
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al actualizar el perfil:', error);
+    return res.status(500).json({ status: 'ERROR', message: 'Error interno del servidor.', error: error.message });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
+  updateProfile
 };
-
-module.exports = { register, login, getMe };

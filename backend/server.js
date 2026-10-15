@@ -39,14 +39,14 @@ app.get('/api/ping', (req, res) => {
   res.send('pong');
 });
 
-// Capturadora de cualquier cosa para 404
+// Capturadora de cualquier cosa para 404 debe ir siempre al final
 
-app.use('/api/*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     status: 'ERROR',
     message: 'El endpoint de la API solicitado no existe'
   });
-})
+});
 
 // Iniciar servidor
 app.listen(PORT, () => {

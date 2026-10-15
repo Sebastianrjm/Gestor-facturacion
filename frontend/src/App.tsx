@@ -8,6 +8,7 @@ import NewBill from './pages/NewBill';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
+import MyProfile from './pages/MyProfile';
 
 export default function App() {
   return (
@@ -29,6 +30,10 @@ export default function App() {
 
             <Route path="/editar-factura" element={<DashboardLayout />}>
               <Route index element={<NewBill />} />
+            </Route>
+
+            <Route path="/dashboard/perfil" element={<DashboardLayout />}>
+              <Route index element={<MyProfile />} />
             </Route>
           </Route>
 

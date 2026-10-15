@@ -47,3 +47,30 @@ input:-webkit-autofill:active {
 .italic{
   font-style: italic;
 }
+
+input[type="file"]::file-selector-button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.2em;
+  font-weight: 600;
+  border: 1px solid #265CF0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  outline: none;
+  width: fit-content;
+  background-color: transparent;
+  color: #265CF0;
+  box-shadow: none;
+
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #0ea5e940;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25)
+}

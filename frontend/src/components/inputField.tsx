@@ -47,8 +47,6 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: '8px',
     border: '1px solid #DCE2EC',
     boxSizing: 'border-box',
-    backgroundColor: 'rgba(187, 187, 187, 0.15)',
     height: '46px',
-    color: '#999999'
-  },
+    },
 };
