@@ -20,7 +20,7 @@ export default function DashboardLayout() {
           <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#172338' }}>Folio.</h2>
           {user && (
             <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#748094' }}>
-              {user.nombre}
+              {`${user.nombre || ''} ${user.apellido || ''}`.trim()}
             </p>
           )}
         </div>

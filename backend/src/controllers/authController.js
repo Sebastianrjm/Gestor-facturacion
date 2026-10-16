@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // 1. REGISTRO DE USUARIO Y EMISOR (Transacción)
 const register = async (req, res) => {
-    const { email, password, nombre, razonSocial, identificacionFiscal } = req.body;
+    const { email, password, nombre, apellido, razonSocial, identificacionFiscal } = req.body;
 
     try{
         // Verifica si el usuario ya existe
@@ -31,9 +31,9 @@ const register = async (req, res) => {
 
         // Crear el Usuario asociado al Emisor
         const userResult = await db.query(
-            `INSERT INTO usuarios (emisor_id, email, password_hash, nombre)
-                VALUES ($1, $2, $3, $4) RETURNING id`,
-            [emisorId, email, passwordHash, nombre]
+            `INSERT INTO usuarios (emisor_id, email, password_hash, nombre, apellido)
+                VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+            [emisorId, email, passwordHash, nombre, apellido]
         );
 
         // Commit de la transacción
@@ -70,7 +70,7 @@ const login = async (req, res) => {
         // Busca el usuario en la db
 
         const result = await db.query(
-            'SELECT id, emisor_id, email, password_hash, nombre FROM usuarios WHERE email = $1',
+            'SELECT id, emisor_id, email, password_hash, nombre, apellido FROM usuarios WHERE email = $1',
             [email]
         );
 
@@ -90,13 +90,13 @@ const login = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, emisorID: user.emisor_id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '8h' }
+            { expiresIn: '1h' }
         );
 
         return res.json({
             message: 'Inicio de sesión exitoso',
             token,
-            user: { id: user.id, nombre: user.nombre, email: user.email, emisorId: user.emisor_id }
+            user: { id: user.id, nombre: user.nombre, email: user.email, emisorId: user.emisor_id, apellido: user.apellido }
         });
     } catch (error) {
         console.error('Error en login:', error);

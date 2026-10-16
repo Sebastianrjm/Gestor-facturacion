@@ -16,6 +16,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
     password: '',
     razonSocial: '',
     identificacionFiscal: '',
+    apellido: ""
   });
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -100,12 +101,22 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
         />
 
         <InputField
-          label="Nombre de la persona encargada"
+          label="Nombres de la persona encargada"
           type="text"
           name="nombre"
           value={formData.nombre}
           onChange={handleChange}
           placeholder="Nombre de la persona encargada"
+          required
+        />
+
+        <InputField
+          label="Apellidos de la persona encargada"
+          type="text"
+          name="apellido"
+          value={formData.apellido}
+          onChange={handleChange}
+          placeholder="Apellido de la persona encargada"
           required
         />
         

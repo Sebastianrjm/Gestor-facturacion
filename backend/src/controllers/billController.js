@@ -162,7 +162,8 @@ const getNewBillInitialization = async (req, res) => {
 
     // 1. Obtener datos del usuario y del emisor (razón social y logo)
     const userQuery = `
-      SELECT u.id AS usuario_id, u.nombre AS nombre_usuario, u.emisor_id, e.razon_social AS emisor, e.logo_url 
+      SELECT u.id AS usuario_id, u.nombre AS nombre_usuario, u.emisor_id, e.razon_social AS emisor, 
+      e.logo_url, e.telefono, e.direccion, e.condiciones_defecto, u.apellido AS apellido_usuario
       FROM usuarios u 
       JOIN emisores e ON u.emisor_id = e.id 
       WHERE u.id = $1
@@ -173,7 +174,10 @@ const getNewBillInitialization = async (req, res) => {
       return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
     }
 
-    const { nombre_usuario, emisor_id, emisor, logo_url } = userResult.rows[0];
+    const { 
+        nombre_usuario, emisor_id, emisor, logo_url, apellido_usuario, condiciones_defecto, 
+        direccion, telefono
+    } = userResult.rows[0];
 
     // 2. Generar el nuevo código de factura (Folio automático basado en el año actual y conteo)
     const currentYear = new Date().getFullYear();
@@ -193,7 +197,11 @@ const getNewBillInitialization = async (req, res) => {
         estadoFactura: 'BORRADOR',
         emisor: emisor || '',
         nombreUsuario: nombre_usuario || '',
-        profileImage: logo_url 
+        apellidoUsuario: apellido_usuario,
+        profileImage: logo_url,
+        notasDefecto: condiciones_defecto,
+        direccionEmisor: direccion,
+        telefonoEmisor: telefono
       }
     });
 
@@ -412,7 +420,7 @@ const generateBillPDF = async (req, res) => {
                    e.telefono AS emisor_telefono, e.email AS emisor_email, e.direccion AS emisor_direccion, e.logo_url,
                    c.nombre_comercial AS cliente_nombre, c.identificacion_fiscal AS cliente_rif, 
                    c.email AS cliente_email, c.direccion AS cliente_direccion, c.telefono AS cliente_telefono,
-                   u.nombre AS nombre_usuario
+                   u.nombre AS nombre_usuario, u.apellido AS apellido_usuario
             FROM presupuestos p
             JOIN emisores e ON p.emisor_id = e.id
             LEFT JOIN clientes c ON p.cliente_id = c.id
@@ -478,7 +486,10 @@ const generateBillPDF = async (req, res) => {
             plantillaClass: `template-${(factura.plantilla_id || 'moderno').toLowerCase()}`,
             customCss,
             fechaEmisionFormateada: new Date(factura.fecha_emision).toISOString().split('T')[0],
-            fechaVencimientoFormateada: new Date(factura.fecha_vencimiento).toISOString().split('T')[0]
+            fechaVencimientoFormateada: new Date(factura.fecha_vencimiento).toISOString().split('T')[0],
+            emisor_telefono: factura.emisor_telefono,
+            emisor_direccion: factura.emisor_direccion,
+            apellido_usuario: factura.apellido_usuario
         });
 
         // 7. Renderizar con Puppeteer
@@ -529,7 +540,10 @@ const getInvoiceById = async (req, res) => {
                 c.telefono AS cliente_telefono,
                 e.razon_social AS emisor,
                 e.logo_url AS "profileImage",
-                u.nombre AS "nombreUsuario"
+                u.nombre AS "nombreUsuario",
+                u.apellido AS "apellidoUsuario",
+                e.telefono AS "telefonoEmisor",
+                e.direccion AS "direccionEmisor"
             FROM presupuestos p
             JOIN emisores e ON p.emisor_id = e.id
             LEFT JOIN clientes c ON p.cliente_id = c.id

@@ -12,6 +12,7 @@ export interface LoginCredentials {
 
 export interface RegisterCredentials {
     nombre: string;
+    apellido: string; 
     email: string;
     password: string;
     razonSocial: string;
