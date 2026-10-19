@@ -19,12 +19,15 @@ interface InvoicePreviewProps {
     estadoFactura: string;
     emisor: string;
     nombreUsuario: string;
+    apellidoUsuario: string;
     notas: string;
     aplicaImpuesto: string;
     impuestoPorcentaje: number;
     numeroFiscal: string;
     direccionCliente: string;
-    numeroCliente: string
+    numeroCliente: string;
+    numTelefono: string;
+    direccionEmisor: string
   };
   items: ItemDetalle[];
   monedaPrincipal: string;
@@ -68,26 +71,37 @@ export default function InvoicePreview({
 
       {/* Sección informativa */}
       <div className="invoice-info-section">
-        <div className="invoice-image-transmitter">
-          {profileImage ? (
-            <img src={profileImage} alt="Perfil Emisor" />
-          ) : (
-            <span style={{ color: '#FFFFFF', fontWeight: 'bold' }}>SR</span>
-          )}
+        {/* Contenedor Izquierdo: Textos del Emisor y Cliente */}
+        <div className="invoice-info-texts">
+          <div className="invoice-info-group">
+            <strong>Datos del emisor:</strong>
+            <p className="invoice-info-text">EMISOR · {formData.emisor || 'Emisor'}</p>
+            <p className="invoice-info-text">NOMBRE DEL EMISOR · {formData.nombreUsuario || 'Nombre usuario'} {formData.apellidoUsuario || 'apellido usuario'}</p>
+            <p className="invoice-info-text">TELÉFONO DE CONTACTO · {formData.numTelefono || 'Telefono Emisor'}</p>
+            <p className="invoice-info-text">DIRECCIÓN · {formData.direccionEmisor || 'Direccion emisor'}</p>
+          </div>
+
+          <div className="invoice-info-group-client">
+            <strong>Datos del cliente:</strong>
+            <p className="invoice-info-text">CLIENTE · {formData.cliente || 'Nombre del Cliente'}</p>
+            <p className="invoice-info-text">EMAIL DEL CLIENTE · {formData.correo || 'correo@empresa.com'}</p>
+            <p className="invoice-info-text">NÚMERO FISCAL · {formData.numeroFiscal || 'J-12345678'}</p>
+            <p className="invoice-info-text">DIRECCIÓN DEL CLIENTE · {formData.direccionCliente || 'Calle 1'}</p>
+            <p className="invoice-info-text">NÚMERO DEL CLIENTE · {formData.numeroCliente || '+58 424-12345678'}</p>
+            <p className="invoice-info-text">Emisión: {formData.fechaEmision || 'YYYY-MM-DD'}</p>
+            <p className="invoice-info-text">Vence: {formData.fechaVencimiento || 'YYYY-MM-DD'}</p>
+          </div>
         </div>
 
-        <div className="invoice-info-texts">
-          <strong>Datos del emisor:</strong>
-          <p className="invoice-info-text">EMISOR · {formData.emisor || 'Emisor'}</p>
-          <p className="invoice-info-text">NOMBRE DEL EMISOR · {formData.nombreUsuario || 'Nombre usuario'}</p>
-          <strong>Datos del cliente:</strong>
-          <p className="invoice-info-text">CLIENTE · {formData.cliente || 'Nombre del Cliente'}</p>
-          <p className="invoice-info-text">EMAIL DEL CLIENTE · {formData.correo || 'correo@empresa.com'}</p>
-          <p className="invoice-info-text">NÚMERO FISCAL · {formData.numeroFiscal || 'J-12345678'}</p>
-          <p className="invoice-info-text">DIRECCIÓN DEL CLIENTE · {formData.direccionCliente || 'Calle 1'}</p>
-          <p className="invoice-info-text">NÚMERO DEL CLIENTE · {formData.numeroCliente || '+58 424-12345678'}</p>
-          <p className="invoice-info-text">Emisión: {formData.fechaEmision || 'YYYY-MM-DD'}</p>
-          <p className="invoice-info-text">Vence: {formData.fechaVencimiento || 'YYYY-MM-DD'}</p>
+        {/* Contenedor Derecho: Logo del Emisor */}
+        <div className="invoice-image-band">
+          <div className="invoice-image-transmitter">
+            {profileImage ? (
+              <img src={profileImage} alt="Perfil Emisor" />
+            ) : (
+              <span className="invoice-avatar-initials">SR</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -142,7 +156,6 @@ export default function InvoicePreview({
           <span>Total a pagar:</span>
           <strong>${totalPagar.toFixed(2)} {monedaPrincipal}</strong>
         </div>
-        
 
         {totalReferencial > 0 && (
           <div className="invoice-ref-box">

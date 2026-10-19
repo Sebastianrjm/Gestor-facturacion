@@ -21,26 +21,35 @@
 
         <!-- Información -->
         <div class="invoice-info-section">
-            <div class="invoice-image-transmitter">
-                {{#if logo_url}}
-                    <img src="{{logo_url}}" alt="Perfil Emisor" />
-                {{else}}
-                    <span style="color: #FFFFFF; font-weight: bold;">SR</span>
-                {{/if}}
+            <div class="invoice-info-texts">
+                <div class="invoice-info-group">
+                    <strong>Datos del emisor:</strong>
+                    <p class="invoice-info-text">EMISOR · {{emisor_nombre}}</p>
+                    <p class="invoice-info-text">NOMBRE DEL EMISOR · {{nombre_usuario}}  {{apellido_usuario}}</p>
+                    <p class="invoice-info-text">TELÉFONO DE CONTACTO · {{emisor_telefono}}</p>
+                    <p class="invoice-info-text">DIRECCIÓN · {{emisor_direccion}}</p>
+                </div>
+
+                <div class="invoice-info-group-client">
+                    <strong>Datos del cliente:</strong>
+                    <p class="invoice-info-text">CLIENTE · {{cliente_nombre}}</p>
+                    <p class="invoice-info-text">EMAIL DEL CLIENTE · {{cliente_email}}</p>
+                    <p class="invoice-info-text">NÚMERO FISCAL · {{cliente_rif}}</p>
+                    <p class="invoice-info-text">DIRECCIÓN DEL CLIENTE · {{cliente_direccion}}</p>
+                    <p class="invoice-info-text">NÚMERO DEL CLIENTE · {{cliente_telefono}}</p>
+                    <p class="invoice-info-text">Emisión: {{fechaEmisionFormateada}}</p>
+                    <p class="invoice-info-text">Vence: {{fechaVencimientoFormateada}}</p>
+                </div>
             </div>
 
-            <div class="invoice-info-texts">
-                <strong>Datos del emisor:</strong>
-                <p class="invoice-info-text">EMISOR · {{emisor_nombre}}</p>
-                <p class="invoice-info-text">NOMBRE DEL EMISOR · {{nombre_usuario}}</p>
-                <strong>Datos del cliente:</strong>
-                <p class="invoice-info-text">CLIENTE · {{cliente_nombre}}</p>
-                <p class="invoice-info-text">EMAIL DEL CLIENTE · {{cliente_email}}</p>
-                <p class="invoice-info-text">NÚMERO FISCAL · {{cliente_rif}}</p>
-                <p class="invoice-info-text">DIRECCIÓN DEL CLIENTE · {{cliente_direccion}}</p>
-                <p class="invoice-info-text">NÚMERO DEL CLIENTE · {{cliente_telefono}}</p>
-                <p class="invoice-info-text">Emisión: {{fechaEmisionFormateada}}</p>
-                <p class="invoice-info-text">Vence: {{fechaVencimientoFormateada}}</p>
+            <div class="invoice-image-band">
+                <div class="invoice-image-transmitter">
+                    {{#if logo_url}}
+                        <img src="{{logo_url}}" alt="Perfil Emisor" />
+                    {{else}}
+                        <span class="invoice-avatar-initials">SR</span>
+                    {{/if}}
+                </div>
             </div>
         </div>
 

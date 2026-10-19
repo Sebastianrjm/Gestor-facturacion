@@ -25,7 +25,10 @@ interface BillFormData {
   direccionCliente: string;
   numeroCliente: string;
   emisor: string;
-  nombreUsuario: string
+  nombreUsuario: string;
+  apellidoUsuario: string;
+  numTelefono: string;
+  direccionEmisor: string
 }
 
 export default function NewBill() {
@@ -144,7 +147,10 @@ export default function NewBill() {
               aplicaImpuesto: Boolean(invoice.aplica_impuesto),
               impuestoPorcentaje: invoice.impuesto_porcentaje ?? 16,
               emisor: invoice.emisor,
-              nombreUsuario: invoice.nombreUsuario
+              nombreUsuario: invoice.nombreUsuario,
+              apellidoUsuario: invoice.apellidoUsuario,
+              numTelefono: invoice.telefonoEmisor,
+              direccionEmisor: invoice.direccionEmisor
             });
             setMonedaPrincipal(invoice.moneda_codigo || 'USD');
             setProfileImage(invoice.profileImage);
@@ -176,6 +182,10 @@ export default function NewBill() {
               estadoFactura: result.data.estadoFactura,
               emisor: result.data.emisor,
               nombreUsuario: result.data.nombreUsuario,
+              apellidoUsuario: result.data.apellidoUsuario,
+              notas: result.data.notasDefecto,
+              direccionEmisor: result.data.direccionEmisor,
+              numTelefono: result.data.telefonoEmisor
             }));
             setProfileImage(result.data.profileImage);
           }
@@ -249,7 +259,7 @@ export default function NewBill() {
         fechaVencimiento: formData.fechaVencimiento,
         notasComerciales: formData.notas,
         aplicaImpuesto: formData.aplicaImpuesto,
-        monedaReferencia: monedaReferencia,               
+        monedaReferencia: monedaReferencia,             
         impuestoPorcentaje: Number(formData.impuestoPorcentaje) || 0, 
         items: items
       });
