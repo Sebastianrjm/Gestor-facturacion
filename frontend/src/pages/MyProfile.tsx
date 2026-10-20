@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import InputField from '../components/inputField';
 import { Button } from '../components/Button';
 import '../App.css';
+import API from '../services/api';
 
 interface ProfileFormData {
   nombres: string;
@@ -40,11 +41,8 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/v1/auth/perfil', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await response.json();
+        const response = await API.get(`/auth/perfil`);
+        const result = response.data;
         
         if (result.status === 'SUCCESS' && result.data) {
           const { usuario, emisor } = result.data;
@@ -102,9 +100,6 @@ export default function MyProfile() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      
-      // CAMBIO CLAVE: Usar FormData para enviar texto y archivos de manera conjunta
       const dataToSend = new FormData();
       dataToSend.append('nombres', formData.nombres);
       dataToSend.append('apellidos', formData.apellidos);
@@ -118,21 +113,12 @@ export default function MyProfile() {
         dataToSend.append('logo', selectedFile);
       }
 
-      const response = await fetch('http://localhost:5000/api/v1/auth/actualizar-perfil', {
-        method: 'PUT',
-        headers: {
-          // NOTA: Cuando usas FormData, NO debes incluir 'Content-Type': 'application/json'. 
-          // El navegador define automáticamente el multipart/form-data y sus límites.
-          'Authorization': `Bearer ${token}`
-        },
-        body: dataToSend
-      });
-
-      const result = await response.json();
+      // Usamos API.put (la cookie viaja sola gracias a withCredentials)
+      const response = await API.put('/auth/actualizar-perfil', dataToSend);
+      const result = response.data;
 
       if (result.status === 'SUCCESS') {
         alert('Perfil actualizado correctamente.');
-        // Si el backend devolvió la nueva URL pública de Supabase, la actualizamos en pantalla
         if (result.data && result.data.logoUrl) {
           setprofileImage(result.data.logoUrl);
         }
@@ -142,14 +128,15 @@ export default function MyProfile() {
       }
     } catch (error: any) {
       console.error('Error al guardar el perfil:', error);
-      alert('Error al conectar con el servidor.');
+      const mensajeError = error.response?.data?.message || 'Error al conectar con el servidor.';
+      alert(mensajeError);
     }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Validación en el frontend: que las nuevas contraseñas coincidan
+    // Validación en el frontend: que las nuevas contraseñas coincidan
     if (formData.nuevaContrasena !== formData.confirNuevaContrasena) {
       alert('Las nuevas contraseñas no coinciden.');
       return;
@@ -161,21 +148,14 @@ export default function MyProfile() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/v1/auth/actualizar-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          currentPassword: formData.contrasenaActual,
-          newPassword: formData.nuevaContrasena,
-          confirmPassword: formData.confirNuevaContrasena
-        })
+      // Usamos API.put enviando el objeto directamente
+      const response = await API.put('/auth/actualizar-password', {
+        currentPassword: formData.contrasenaActual,
+        newPassword: formData.nuevaContrasena,
+        confirmPassword: formData.confirNuevaContrasena
       });
 
-      const result = await response.json();
+      const result = response.data;
 
       if (result.status === 'SUCCESS') {
         alert('Contraseña actualizada correctamente.');
@@ -189,9 +169,10 @@ export default function MyProfile() {
       } else {
         alert(`Error: ${result.message || result.error}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al actualizar la contraseña:', error);
-      alert('Error al conectar con el servidor.');
+      const mensajeError = error.response?.data?.message || 'Error al conectar con el servidor.';
+      alert(mensajeError);
     }
   };
 

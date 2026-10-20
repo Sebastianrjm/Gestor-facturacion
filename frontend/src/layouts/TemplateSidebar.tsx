@@ -38,7 +38,6 @@ export default function TemplateSidebar({ open, onClose, onSelectTemplate }: Tem
         setPlantillas(result.data);
       } catch (err: any) {
         console.error('Error:', err);
-        // Extraemos el mensaje de error de manera segura si viene de una respuesta HTTP de Axios
         const mensajeError = err.response?.data?.message || err.message || 'Error al obtener las plantillas';
         setError(mensajeError);
       } finally {

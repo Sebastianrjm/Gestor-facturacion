@@ -1,15 +1,24 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import "../assets/Sidebar.css"
+import "../assets/Sidebar.css";
+import API from '../services/api';
 
 export default function DashboardLayout() {
-  const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    try {
+      const response = await API.post('/auth/logout');
+      
+      if (response.data.status === 'SUCCESS') {
+        // Limpia cualquier estado local de usuario que tengas en React (ej: setUser(null))
+        // y redirige al usuario al login
+        window.location.href = '/login'; 
+      }
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   return (

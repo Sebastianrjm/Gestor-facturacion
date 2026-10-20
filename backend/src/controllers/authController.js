@@ -117,6 +117,31 @@ const login = async (req, res) => {
     }
 };
 
+// 3. LOGOUT DE USUARIO
+const logout = async (req, res) => {
+    try {
+        // Para cerrar la sesión, sobrescribimos la cookie 'token' 
+        // indicando que su fecha de expiración es inmediata (new Date(0))
+        res.cookie('token', '', {
+            httpOnly: true,
+            secure: false, // Debe coincidir con la configuración que usaste en el login
+            sameSite: 'lax',
+            expires: new Date(0) // Expira al instante
+        });
+
+        return res.status(200).json({
+            status: 'SUCCESS',
+            message: 'Sesión cerrada exitosamente.'
+        });
+    } catch (error) {
+        console.error('Error en logout:', error);
+        return res.status(500).json({ 
+            status: 'ERROR', 
+            message: 'Error interno del servidor al cerrar sesión.' 
+        });
+    }
+};
+
 
 const getMe = async (req, res) => {
   try {
@@ -316,6 +341,7 @@ const updatePassword = async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
   getMe,
   updateProfile,
   updatePassword

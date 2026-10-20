@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { useNavigate } from 'react-router-dom';
 import InvoicePreview, {  type ItemDetalle } from '../components/InvoicePreview';
 import { saveAndDownloadBill } from '../services/billService';
+import API from '../services/api';
 
 
 interface BillFormData {
@@ -125,10 +126,8 @@ export default function NewBill() {
 
         if (isEditing && invoiceId) {
           // --- MODO EDICIÓN: Traer datos de la factura existente ---
-          const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${invoiceId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const result = await response.json();
+          const response = await API.get(`/presupuestos/${invoiceId}`);
+          const result = response.data;
 
           if (result.status === 'SUCCESS') {
             const { invoice, items: fetchedItems } = result.data;
@@ -170,10 +169,8 @@ export default function NewBill() {
           }
         } else {
           // --- MODO CREACIÓN: Inicializar nueva factura ---
-          const response = await fetch('http://localhost:5000/api/v1/presupuestos/nuevo', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const result = await response.json();
+          const response = await API.get(`/presupuestos/nuevo`);
+          const result = response.data;
           
           if (result.status === 'SUCCESS') {
             setFormData(prev => ({
@@ -203,13 +200,8 @@ export default function NewBill() {
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/v1/presupuestos/divisas', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const result = await response.json();
+        const response = await API.get(`/presupuestos/divisas`);
+        const result = response.data;
         
         if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
           // Mapeamos los datos de la BD al formato que requiere CustomSelect ({ label, value })

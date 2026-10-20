@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, updateProfile, updatePassword } = require('../controllers/authController');
+const { register, login, logout, getMe, updateProfile, updatePassword } = require('../controllers/authController');
 const verifyToken = require('../middlewares/authMiddleware');
 const multer = require('multer');
 
@@ -28,5 +28,6 @@ router.post('/login', login);
 router.get('/perfil', verifyToken, getMe);
 router.put('/actualizar-perfil', verifyToken, upload.single('logo'), updateProfile);
 router.put('/actualizar-password', verifyToken, updatePassword);
+router.post('/logout', verifyToken, logout)
 
 module.exports = router;
