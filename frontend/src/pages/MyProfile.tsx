@@ -146,10 +146,53 @@ export default function MyProfile() {
     }
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Actualizando contraseña...");
-    alert("Contraseña actualizada correctamente");
+
+    // 1. Validación en el frontend: que las nuevas contraseñas coincidan
+    if (formData.nuevaContrasena !== formData.confirNuevaContrasena) {
+      alert('Las nuevas contraseñas no coinciden.');
+      return;
+    }
+
+    if (formData.nuevaContrasena.length < 6) {
+      alert('La nueva contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/v1/auth/actualizar-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: formData.contrasenaActual,
+          newPassword: formData.nuevaContrasena,
+          confirmPassword: formData.confirNuevaContrasena
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'SUCCESS') {
+        alert('Contraseña actualizada correctamente.');
+        // Limpiamos los campos de contraseñas por seguridad
+        setFormData(prev => ({
+          ...prev,
+          contrasenaActual: '',
+          nuevaContrasena: '',
+          confirNuevaContrasena: ''
+        }));
+      } else {
+        alert(`Error: ${result.message || result.error}`);
+      }
+    } catch (error) {
+      console.error('Error al actualizar la contraseña:', error);
+      alert('Error al conectar con el servidor.');
+    }
   };
 
   // Obtener la primera letra del nombre y apellido de forma dinámica

@@ -12,23 +12,36 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  * @param {string} mimeType - 'image/png' o 'image/svg+xml'
  */
 async function uploadLogoToSupabase(fileBuffer, fileName, mimeType) {
-    const { data, error } = await supabase.storage
-        .from('logos-emisores')
-        .upload(fileName, fileBuffer, {
-            contentType: mimeType,
-            upsert: true // Sobrescribe si ya existe un logo previo para ese emisor
-        });
+    try {
+        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+        const filesToRemove = [`${baseName}.png`, `${baseName}.svg`];
+        // Elimina el logo con otra extension
+        await supabase.storage
+            .from('logos-emisores')
+            .remove(filesToRemove);
 
-    if (error) {
-        throw new Error(`Error al subir imagen a Supabase: ${error.message}`);
+        // Guarda el nuevo logo
+        const { data, error } = await supabase.storage
+            .from('logos-emisores')
+            .upload(fileName, fileBuffer, {
+                contentType: mimeType,
+                upsert: true
+            });
+
+        if (error) {
+            throw new Error(`Error al subir imagen a Supabase: ${error.message}`);
+        }
+
+        // 5. Obtener y retornar la URL pública permanente
+        const { data: publicUrlData } = supabase.storage
+            .from('logos-emisores')
+            .getPublicUrl(fileName);
+
+        return publicUrlData.publicUrl;
+
+    } catch (err) {
+        throw new Error(err.message || 'Error en el servicio de Supabase Storage');
     }
-
-    // Obtener la URL pública permanente
-    const { data: publicUrlData } = supabase.storage
-        .from('logos-emisores')
-        .getPublicUrl(fileName);
-
-    return publicUrlData.publicUrl;
 }
 
 module.exports = { uploadLogoToSupabase };

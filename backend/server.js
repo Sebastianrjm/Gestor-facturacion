@@ -8,6 +8,7 @@ const db = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const templateRoutes = require('./src/routes/templateRoutes');
 const billRoutes = require('./src/routes/billRoutes');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,6 +16,7 @@ const PORT = process.env.PORT || 5000;
 // Middlewares globales
 app.use(cors()); // Permitir peticiones desde el Frontend
 app.use(express.json()); // Parsear JSON en el body de las peticiones
+app.use(cookieParser())
 
 // Rutas de la API
 app.use('/api/v1/auth', authRoutes);

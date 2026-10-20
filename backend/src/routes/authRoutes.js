@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, updateProfile } = require('../controllers/authController');
+const { register, login, getMe, updateProfile, updatePassword } = require('../controllers/authController');
 const verifyToken = require('../middlewares/authMiddleware');
 const multer = require('multer');
 
@@ -27,5 +27,6 @@ router.post('/login', login);
 // Ruta Protegida (pasa primero por verifyToken)
 router.get('/perfil', verifyToken, getMe);
 router.put('/actualizar-perfil', verifyToken, upload.single('logo'), updateProfile);
+router.put('/actualizar-password', verifyToken, updatePassword);
 
 module.exports = router;

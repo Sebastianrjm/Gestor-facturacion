@@ -49,9 +49,15 @@ const register = async (req, res) => {
             {expiresIn: '1h'}
         )
 
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', // true en producción (HTTPS), false en desarrollo local
+          sameSite: 'lax', // Permite enviar la cookie en peticiones locales de distinto puerto
+          maxAge: 3600000 // 1 hora de expiración (igual al JWT)
+        });
+
         return res.status(201).json({ 
             message: 'Usuario registrado exitosamente.', 
-            token,
             user: { id: user.id, email: user.email, nombre: user.nombre }
         });
 
@@ -94,9 +100,15 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', 
+          sameSite: 'lax', 
+          maxAge: 3600000 
+        });
+
         return res.json({
             message: 'Inicio de sesión exitoso',
-            token,
             user: { id: user.id, nombre: user.nombre, email: user.email, emisorId: user.emisor_id, apellido: user.apellido }
         });
     } catch (error) {
@@ -188,7 +200,7 @@ const updateProfile = async (req, res) => {
       const extension = req.file.mimetype === 'image/svg+xml' ? 'svg' : 'png';
       
       // Construir un nombre único basado en el emisorId
-      const fileName = `logos/logo-${emisorId}.${extension}`;
+      const fileName = `logo-${emisorId}.${extension}`;
       
       // Subir a Supabase Storage
       logoUrl = await uploadLogoToSupabase(
@@ -242,9 +254,69 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const updatePassword = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    // 1. Validar que la nueva contraseña y la confirmación coincidan en el backend
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ 
+        status: 'ERROR', 
+        message: 'La nueva contraseña y su confirmación no coinciden.' 
+      });
+    }
+
+    // 2. Buscar al usuario en la base de datos para obtener su password_hash actual
+    const userRes = await db.query('SELECT password_hash FROM usuarios WHERE id = $1', [userId]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ 
+        status: 'ERROR', 
+        message: 'Usuario no encontrado.' 
+      });
+    }
+
+    const user = userRes.rows[0];
+
+    // 3. Comparar la contraseña antigua enviada con el hash guardado en la BD
+    const isPasswordValid = await bcript.compare(currentPassword, user.password_hash);
+    if (!isPasswordValid) {
+      return res.status(400).json({ 
+        status: 'ERROR', 
+        message: 'La contraseña actual es incorrecta.' 
+      });
+    }
+
+    // 4. Encriptar la nueva contraseña
+    const saltRounds = 10;
+    const newPasswordHash = await bcript.hash(newPassword, saltRounds);
+
+    // 5. Actualizar el password_hash y el updated_at en la tabla usuarios
+    await db.query(
+      `UPDATE usuarios 
+       SET password_hash = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2`,
+      [newPasswordHash, userId]
+    );
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Contraseña actualizada exitosamente.'
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar la contraseña:', error);
+    return res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Error interno del servidor al actualizar la contraseña.' 
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
-  updateProfile
+  updateProfile,
+  updatePassword
 };
