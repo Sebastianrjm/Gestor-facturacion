@@ -21,9 +21,9 @@ export interface BillPayload {
 }
 
 export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') => {
-  const token = localStorage.getItem('token');
   const response = await fetch(`http://localhost:5000/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`, {
-    headers: { 'Authorization': `Bearer ${token}` }
+    method: 'GET',
+    credentials: 'include' // <--- Envía la cookie HttpOnly
   });
   const result = await response.json();
   if (result.status !== 'SUCCESS') throw new Error(result.message);
@@ -31,13 +31,12 @@ export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') =
 };
 
 export const updateInvoiceStatus = async (id: string, estado: string) => {
-  const token = localStorage.getItem('token');
   const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}/estado`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json'
     },
+    credentials: 'include', // <--- Envía la cookie HttpOnly
     body: JSON.stringify({ estado })
   });
   const result = await response.json();
@@ -48,15 +47,13 @@ export const updateInvoiceStatus = async (id: string, estado: string) => {
 };
 
 export const saveAndDownloadBill = async (payload: BillPayload) => {
-  const token = localStorage.getItem('token');
-
   // 1. Petición POST para guardar de manera persistente en PostgreSQL
   const saveResponse = await fetch('http://localhost:5000/api/v1/presupuestos', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json'
     },
+    credentials: 'include', // <--- Envía la cookie HttpOnly
     body: JSON.stringify(payload)
   });
 
@@ -71,9 +68,8 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
 
   // 2. Petición GET inmediata para obtener el PDF binario (Blob) compilado por Puppeteer
   const pdfResponse = await fetch(`http://localhost:5000/api/v1/presupuestos/${presupuestoId}/pdf`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
+    method: 'GET',
+    credentials: 'include' // <--- Envía la cookie HttpOnly
   });
 
   if (!pdfResponse.ok) {
@@ -97,9 +93,9 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
 };
 
 export const getInvoiceById = async (id: string) => {
-  const token = localStorage.getItem('token');
   const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}`, {
-    headers: { 'Authorization': `Bearer ${token}` }
+    method: 'GET',
+    credentials: 'include' // <--- Envía la cookie HttpOnly
   });
   const result = await response.json();
   if (!response.ok || result.status !== 'SUCCESS') {

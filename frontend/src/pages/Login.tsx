@@ -22,11 +22,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  }, []);
-
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -40,16 +35,18 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setLoading(true);
 
     try {
-      // 1. Enviamos formData.email y formData.password
+      // 1. Enviamos credenciales. El backend responderá guardando la cookie HttpOnly
       const response = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password,
       });
 
-      const { token, user } = response.data;
+      // Nota: Ya no esperamos el 'token' en el JSON del frontend por seguridad.
+      // El backend devuelve los datos del usuario.
+      const { user } = response.data;
 
-      // 2. Pasamos token y user como 2 argumentos requeridos por AuthContext
-      login(token, user);
+      // 2. Actualizamos el estado global del usuario en el AuthContext
+      login(user);
 
       if (onLoginSuccess) {
         onLoginSuccess(user);

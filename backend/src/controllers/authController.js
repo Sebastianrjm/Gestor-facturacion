@@ -44,21 +44,21 @@ const register = async (req, res) => {
 
         // Generar token JWT
         const token = jwt.sign(
-            {usuario: user.id, emisorId: user.emisor_id, email: user.email},
+            { userId: user.id, emisorId: emisorId, email: email },
             process.env.JWT_SECRET,
-            {expiresIn: '1h'}
-        )
+            { expiresIn: '1h' }
+        );
 
         res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production', // true en producción (HTTPS), false en desarrollo local
-          sameSite: 'lax', // Permite enviar la cookie en peticiones locales de distinto puerto
-          maxAge: 3600000 // 1 hora de expiración (igual al JWT)
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 3600000
         });
 
         return res.status(201).json({ 
             message: 'Usuario registrado exitosamente.', 
-            user: { id: user.id, email: user.email, nombre: user.nombre }
+            user: { id: user.id, email: email, nombre: nombre, emisorId: emisorId }
         });
 
     } catch (error) {
@@ -95,21 +95,21 @@ const login = async (req, res) => {
 
         // Generar token JWT
         const token = jwt.sign(
-            { id: user.id, emisorID: user.emisor_id, email: user.email },
+            { userId: user.id, emisorId: user.emisor_id, email: user.email },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
         res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production', 
-          sameSite: 'lax', 
-          maxAge: 3600000 
+            httpOnly: true,
+            secure: false, 
+            sameSite: 'lax', 
+            maxAge: 3600000 
         });
 
         return res.json({
             message: 'Inicio de sesión exitoso',
-            user: { id: user.id, nombre: user.nombre, email: user.email, emisorId: user.emisor_id, apellido: user.apellido }
+            user: { id: user.id, nombre: user.nombre, apellido: user.apellido, email: user.email, emisorId: user.emisor_id }
         });
     } catch (error) {
         console.error('Error en login:', error);

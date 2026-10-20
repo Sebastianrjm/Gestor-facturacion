@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Drawer, Box, Typography, Card, CardMedia, CardContent, CardActionArea } from '@mui/material';
+import API from '../services/api';
 
 interface Plantilla {
   id: string;
@@ -20,35 +21,26 @@ export default function TemplateSidebar({ open, onClose, onSelectTemplate }: Tem
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Solo hace el fetch si el Drawer está abierto para evitar peticiones innecesarias
     if (!open) return;
 
     const fetchPlantillas = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Recuperamos el token de autenticación almacenado al hacer login
-        const token = localStorage.getItem('token'); 
+        const response = await API.get('/plantillas');
 
-        const response = await fetch('http://localhost:5000/api/v1/plantillas', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const result = response.data;
 
-        const result = await response.json();
-
-        if (!response.ok) {
+        if (result.status !== 'SUCCESS') {
           throw new Error(result.message || 'Error al obtener las plantillas');
         }
 
-        // Como tu controlador devuelve { status: 'SUCCESS', data: [...] }
         setPlantillas(result.data);
       } catch (err: any) {
         console.error('Error:', err);
-        setError(err.message);
+        // Extraemos el mensaje de error de manera segura si viene de una respuesta HTTP de Axios
+        const mensajeError = err.response?.data?.message || err.message || 'Error al obtener las plantillas';
+        setError(mensajeError);
       } finally {
         setLoading(false);
       }
