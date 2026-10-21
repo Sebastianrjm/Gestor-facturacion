@@ -385,7 +385,7 @@ const saveBill = async (req, res) => {
         
         res.status(201).json({
             status: 'SUCCESS',
-            message: 'Factura guardada o actualizada correctamente',
+            message: 'Factura guardada correctamente',
             data: { id: presupuestoId, folio }
         });
 
@@ -456,6 +456,11 @@ const generateBillPDF = async (req, res) => {
         const tasaNumerica = Number(factura.tasa_cambio_aplicada) || 0;
         const totalReferencial = tasaNumerica > 0 ? totalNum * tasaNumerica : 0;
 
+        // Iniciales
+        const firstN = factura.nombre_usuario.trim().charAt(0);
+        const firstA = factura.apellido_usuario.trim().charAt(0);
+        const initials = `${firstN}${firstA}`.toUpperCase();
+
         // 5. Leer estilos CSS y plantilla Handlebars
         const cssPath = path.join(__dirname, '../../../frontend/src/assets/InvoicePreview.css');
         const customCss = fs.readFileSync(cssPath, 'utf8');
@@ -489,7 +494,8 @@ const generateBillPDF = async (req, res) => {
             fechaVencimientoFormateada: new Date(factura.fecha_vencimiento).toISOString().split('T')[0],
             emisor_telefono: factura.emisor_telefono,
             emisor_direccion: factura.emisor_direccion,
-            apellido_usuario: factura.apellido_usuario
+            apellido_usuario: factura.apellido_usuario,
+            iniciales: initials
         });
 
         // 7. Renderizar con Puppeteer

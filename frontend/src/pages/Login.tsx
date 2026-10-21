@@ -56,7 +56,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
       console.error('Error al iniciar sesión:', err);
-      const msg = err.response?.data?.message || 'Error al conectar con el servidor';
+      const msg = err.response?.data?.error || 'Error al conectar con el servidor';
       setError(msg);
     } finally {
       setLoading(false);

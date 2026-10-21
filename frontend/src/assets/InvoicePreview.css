@@ -1,3 +1,7 @@
+.mg-b100{
+  padding-bottom: 50px;
+}
+
 /* --- CONTENEDOR PRINCIPAL Y VARIANTES --- */
 .invoice-sheet {
   background-color: #FFFFFF;
@@ -16,6 +20,10 @@
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #172338;
   -webkit-print-color-adjust: exact;
+}
+.invoice-sheet span {
+  color: #FFFFFF;
+  font-weight: 600;
 }
 
 .invoice-sheet.template-moderno {

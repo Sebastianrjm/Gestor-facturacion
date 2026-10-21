@@ -53,7 +53,7 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
     headers: {
       'Content-Type': 'application/json'
     },
-    credentials: 'include', // <--- Envía la cookie HttpOnly
+    credentials: 'include',
     body: JSON.stringify(payload)
   });
 
@@ -65,11 +65,12 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
 
   const presupuestoId = saveResult.data.id;   // UUID interno de la base de datos
   const folioFactura = saveResult.data.folio; // Ej: FAC-2026-025
+  const apiMessage = saveResult.message;      //  Capturamos el mensaje exacto de la API
 
   // 2. Petición GET inmediata para obtener el PDF binario (Blob) compilado por Puppeteer
   const pdfResponse = await fetch(`http://localhost:5000/api/v1/presupuestos/${presupuestoId}/pdf`, {
     method: 'GET',
-    credentials: 'include' // <--- Envía la cookie HttpOnly
+    credentials: 'include' 
   });
 
   if (!pdfResponse.ok) {
@@ -89,7 +90,10 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
   
   window.URL.revokeObjectURL(url);
   
-  return folioFactura;
+  return {
+    folio: folioFactura,
+    message: apiMessage
+  };
 };
 
 export const getInvoiceById = async (id: string) => {

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import InvoicePreview, {  type ItemDetalle } from '../components/InvoicePreview';
 import { saveAndDownloadBill } from '../services/billService';
 import API from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 
 interface BillFormData {
@@ -33,6 +34,7 @@ interface BillFormData {
 }
 
 export default function NewBill() {
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [plantillaId, setPlantillaId] = useState<string>(
@@ -122,7 +124,6 @@ export default function NewBill() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const token = localStorage.getItem('token');
 
         if (isEditing && invoiceId) {
           // --- MODO EDICIÓN: Traer datos de la factura existente ---
@@ -187,8 +188,9 @@ export default function NewBill() {
             setProfileImage(result.data.profileImage);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error al cargar datos de la factura:', error);
+        showNotification(error, "error")
       }
     };
 
@@ -235,7 +237,9 @@ export default function NewBill() {
     try {
       const { subtotal, total } = calcularTotales();
 
-      const folioGenerado = await saveAndDownloadBill({
+      showNotification("Se esta creando el pdf", "info");
+
+      const response = await saveAndDownloadBill({
         clienteNombre: formData.cliente,
         clienteCorreo: formData.correo,
         clienteFiscal: formData.numeroFiscal,         
@@ -253,16 +257,32 @@ export default function NewBill() {
         aplicaImpuesto: formData.aplicaImpuesto,
         monedaReferencia: monedaReferencia,             
         impuestoPorcentaje: Number(formData.impuestoPorcentaje) || 0, 
-        items: items
+        items: items,
       });
 
-      console.log(`Factura ${folioGenerado} procesada con éxito`);
-      
+      console.log(`Factura ${response.folio} procesada con éxito`);
+      showNotification(response.message, "success");
 
     } catch (error: any) {
       console.error('Error en el proceso:', error);
-      alert(`Hubo un problema: ${error.message}`);
+      showNotification(error.message, "error");
     }
+  };
+
+  // Funciones relacionadas al acordion
+  const [openSections, setOpenSections] = useState({
+    client: true,
+    money: true,
+    concept: true,
+    notes: true,
+  });
+
+  // Función para alternar el estado de una sección
+  const toggleSection = (section: 'client' | 'money' | 'concept' | 'notes') => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
   return (
@@ -275,83 +295,103 @@ export default function NewBill() {
 
       <div style={{display: "flex", gap: "12px", flexDirection: "column", marginTop: "24px"}}>
         <div style={styles.Separator}>
-          <div style={styles.principalPanel}>
-            <h2 style={styles.h2Separator}>01   Cliente y fechas</h2>
+          <div style={styles.principalPanel1}>
+            <h2 
+              style={{ ...styles.h2Separator, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none' }}
+              onClick={() => toggleSection('client')}
+            >
+              <span>01 Cliente y fechas</span>
+              <span style={{ fontSize: '14px', color: '#748094' }}>
+                {openSections.client ? '▲' : '▼'}
+              </span>
+            </h2>
             
-            <div style={styles.inputPanel}>
-              <InputField
-                label="Cliente"
-                type="text"
-                name="cliente"
-                value={formData.cliente}
-                onChange={handleChange}
-                placeholder="Nombre del cliente"
-                required
-              />
+            {openSections.client && (
+              <div style={styles.inputPanel}>
+                <InputField
+                  label="Cliente"
+                  type="text"
+                  name="cliente"
+                  value={formData.cliente}
+                  onChange={handleChange}
+                  placeholder="Nombre del cliente"
+                  required
+                />
 
-              <InputField
-                label="Correo del cliente"
-                type="text"
-                name="correo"
-                value={formData.correo}
-                onChange={handleChange}
-                placeholder="cliente@cliente.com"
-                required
-              />
+                <InputField
+                  label="Correo del cliente"
+                  type="text"
+                  name="correo"
+                  value={formData.correo}
+                  onChange={handleChange}
+                  placeholder="cliente@cliente.com"
+                  required
+                />
 
-              <InputField
-                label="Numero fiscal del cliente"
-                type="text"
-                name="numeroFiscal"
-                value={formData.numeroFiscal}
-                onChange={handleChange}
-                placeholder="J-12345678"
-                required
-              />
+                <InputField
+                  label="Numero fiscal del cliente"
+                  type="text"
+                  name="numeroFiscal"
+                  value={formData.numeroFiscal}
+                  onChange={handleChange}
+                  placeholder="J-12345678"
+                  required
+                />
 
-              <InputField
-                label="Direccion del cliente"
-                type="text"
-                name="direccionCliente"
-                value={formData.direccionCliente}
-                onChange={handleChange}
-                placeholder="Calle 1, avenida 2"
-                required
-              />
+                <InputField
+                  label="Direccion del cliente"
+                  type="text"
+                  name="direccionCliente"
+                  value={formData.direccionCliente}
+                  onChange={handleChange}
+                  placeholder="Calle 1, avenida 2"
+                  required
+                />
 
-              <InputField
-                label="Número del cliente"
-                type="text"
-                name="numeroCliente"
-                value={formData.numeroCliente}
-                onChange={handleChange}
-                placeholder="+58 424-12345678"
-                required
-              />
+                <InputField
+                  label="Número del cliente"
+                  type="text"
+                  name="numeroCliente"
+                  value={formData.numeroCliente}
+                  onChange={handleChange}
+                  placeholder="+58 424-12345678"
+                  required
+                />
 
-              <InputField
-                label="Fecha Emision"
-                type="date"
-                name="fechaEmision"
-                value={formData.fechaEmision}
-                onChange={handleChange}
-                placeholder="2026-10-09"
-                required
-              />
+                <InputField
+                  label="Fecha Emision"
+                  type="date"
+                  name="fechaEmision"
+                  value={formData.fechaEmision}
+                  onChange={handleChange}
+                  placeholder="2026-10-09"
+                  required
+                />
 
-              <InputField
-                label="Fecha Vencimiento"
-                type="date"
-                name="fechaVencimiento"
-                value={formData.fechaVencimiento}
-                onChange={handleChange}
-                placeholder="2026-10-09"
-                required
-              />
-            </div>
+                <InputField
+                  label="Fecha Vencimiento"
+                  type="date"
+                  name="fechaVencimiento"
+                  value={formData.fechaVencimiento}
+                  onChange={handleChange}
+                  placeholder="2026-10-09"
+                  required
+                />
+              </div>
+            )}
 
-            <div style={styles.moneyPanel}>
-              <h2 style={styles.h2Separator}>02   Monedas de la factura</h2>
+            <h2 
+              style={{ ...styles.h2Separator, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none', marginTop: '24px' }}
+              onClick={() => toggleSection('money')}
+            >
+              <span>02 Monedas de la factura</span>
+              <span style={{ fontSize: '14px', color: '#748094' }}>
+                {openSections.money ? '▲' : '▼'}
+              </span>
+            </h2>
+
+            {openSections.money && (
+              <div style={styles.moneyPanel}>
               <CustomSelect
                 label="Moneda Principal"
                 value={monedaPrincipal}
@@ -403,115 +443,138 @@ export default function NewBill() {
                   required
                 />
               )}
-            </div>
+              </div>
+            )}
 
-            <h2 style={styles.h2Separator}>03   Concepto de la factura</h2>
-            <div style={styles.conceptPanel}>
-              {items.map((item, index) => {
-                // Cálculo automático del total por fila
-                const totalFila = (item.cantidad || 0) * (item.precioUnitario || 0);
+            <h2 
+              style={{ ...styles.h2Separator, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none', marginTop: '24px' }}
+              onClick={() => toggleSection('concept')}
+            >
+              <span>03 Concepto de la factura</span>
+              <span style={{ fontSize: '14px', color: '#748094' }}>
+                {openSections.concept ? '▲' : '▼'}
+              </span>
+            </h2>
 
-                return (
-                  <div key={item.id} style={styles.itemRow}>
-                    {/* Descripción del ítem */}
-                    <div style={{ flex: 3, width: "100%" }}>
-                      <InputField
-                        label={`Ítem ${index + 1} - Descripción`}
-                        type="text"
-                        name="descripcion"
-                        value={item.descripcion}
-                        onChange={(e) =>
-                          handleItemChange(item.id, 'descripcion', e.target.value)
-                        }
-                        placeholder="Ej: Desarrollo de API Backend"
-                        required
-                      />
-                    </div>
+            {openSections.concept && (
+              <div style={styles.conceptPanel}>
+                {items.map((item, index) => {
+                  // Cálculo automático del total por fila
+                  const totalFila = (item.cantidad || 0) * (item.precioUnitario || 0);
 
-                    {/* Cantidad */}
-                    <div style={{ flex: 1, width: "100%" }}>
-                      <InputField
-                        label="Cantidad"
-                        type="number"
-                        name="cantidad"
-                        value={item.cantidad}
-                        onChange={(e) =>
-                          handleItemChange(
-                            item.id,
-                            'cantidad',
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        required
-                      />
-                    </div>
-
-                    {/* Precio Unitario */}
-                    <div style={{ flex: 1.5, width: "100%" }}>
-                      <InputField
-                        label="Precio Unitario"
-                        type="number"
-                        name="precioUnitario"
-                        value={item.precioUnitario}
-                        onChange={(e) =>
-                          handleItemChange(
-                            item.id,
-                            'precioUnitario',
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    
-                    <div style={{display: "flex", gap: "12px"}}>
-                      {/* Total calculado de la fila */}
-                      <div style={styles.totalRowContainer}>
-                        <span style={styles.totalRowLabel}>Monto</span>
-                        <span style={styles.totalRowValue}>${totalFila.toFixed(2)}</span>
+                  return (
+                    <div key={item.id} style={styles.itemRow}>
+                      {/* Descripción del ítem */}
+                      <div style={{ flex: 3, width: "100%" }}>
+                        <InputField
+                          label={`Ítem ${index + 1} - Descripción`}
+                          type="text"
+                          name="descripcion"
+                          value={item.descripcion}
+                          onChange={(e) =>
+                            handleItemChange(item.id, 'descripcion', e.target.value)
+                          }
+                          placeholder="Ej: Desarrollo de API Backend"
+                          required
+                        />
                       </div>
 
-                      {/* Botón Eliminar fila (se oculta si solo hay 1) */}
-                      {items.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItem(item.id)}
-                          style={styles.deleteButton}
-                          title="Eliminar fila"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                      {/* Cantidad */}
+                      <div style={{ flex: 1, width: "100%" }}>
+                        <InputField
+                          label="Cantidad"
+                          type="number"
+                          name="cantidad"
+                          value={item.cantidad}
+                          onChange={(e) =>
+                            handleItemChange(
+                              item.id,
+                              'cantidad',
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          required
+                        />
+                      </div>
 
-              {/* Botón para añadir una nueva fila */}
-              <div style={{ marginTop: '8px' }}>
-                <Button variant="secondaryTiny" onClick={handleAddItem}>
-                  + Añadir fila
-                </Button>
+                      {/* Precio Unitario */}
+                      <div style={{ flex: 1.5, width: "100%" }}>
+                        <InputField
+                          label="Precio Unitario"
+                          type="number"
+                          name="precioUnitario"
+                          value={item.precioUnitario}
+                          onChange={(e) =>
+                            handleItemChange(
+                              item.id,
+                              'precioUnitario',
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                      
+                      <div style={{display: "flex", gap: "12px"}}>
+                        {/* Total calculado de la fila */}
+                        <div style={styles.totalRowContainer}>
+                          <span style={styles.totalRowLabel}>Monto</span>
+                          <span style={styles.totalRowValue}>${totalFila.toFixed(2)}</span>
+                        </div>
+
+                        {/* Botón Eliminar fila (se oculta si solo hay 1) */}
+                        {items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.id)}
+                            style={styles.deleteButton}
+                            title="Eliminar fila"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Botón para añadir una nueva fila */}
+                <div style={{ marginTop: '8px' }}>
+                  <Button variant="secondaryTiny" onClick={handleAddItem}>
+                    + Añadir fila
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={styles.notesPanel}>
-              <h2 style={styles.h2Separator}>04   Notas</h2>
-              <textarea 
-                name="notas" 
-                id="notas" 
-                style={styles.textAreaNotes}
-                onChange={handleChange} 
-                placeholder="Condiciones de pago, datos bancarios..."
-                value={formData.notas}>
-              </textarea>
+              <h2 
+                style={{ ...styles.h2Separator, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none', marginTop: '24px' }}
+                onClick={() => toggleSection('notes')}
+              >
+                <span>04 Notas</span>
+                <span style={{ fontSize: '14px', color: '#748094' }}>
+                  {openSections.notes ? '▲' : '▼'}
+                </span>
+              </h2>
+
+              {openSections.notes && (
+                <textarea 
+                  name="notas" 
+                  id="notas" 
+                  style={styles.textAreaNotes}
+                  onChange={handleChange} 
+                  placeholder="Condiciones de pago, datos bancarios..."
+                  value={formData.notas}>
+                </textarea>
+              )}
             </div>
 
             
           </div>
 
-          <div style={styles.principalPanel}>
+          <div style={styles.principalPanel2}>
             <h2 style={styles.h2Separator}>Vista Previa en Vivo</h2>
             <span style={styles.badge}>{plantillaId}</span>
             <InvoicePreview
@@ -550,9 +613,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   Separator: {
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    alignItems: 'flex-start',
   },
-  principalPanel: {
+  principalPanel1: {
     display: "flex",
     flexDirection: "column",
     gap: "20px",
@@ -561,8 +625,25 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #E4E8EF",
     borderRadius: "12px",
     boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-    width: "49%",
+    width: "43%",
     height: "fit-content"
+  },
+  principalPanel2: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+    padding: "24px",
+    backgroundColor: "#FFFFFF",
+    border: "1px solid #E4E8EF",
+    borderRadius: "12px",
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    width: "54%",
+    height: "fit-content",
+    maxHeight: 'calc(100vh - 40px)', 
+    overflowY: 'auto',                
+    overflowX: 'hidden',              
+    position: 'sticky',               
+    top: '24px',
   },
   h2Separator: {
     fontFamily: "inter",

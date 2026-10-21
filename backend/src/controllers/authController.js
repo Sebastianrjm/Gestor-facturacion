@@ -9,9 +9,14 @@ const register = async (req, res) => {
 
     try{
         // Verifica si el usuario ya existe
-        const userExist = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        let userExist = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
         if (userExist.rows.length > 0) {
             return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
+        }
+
+        userExist = await db.query('SELECT * FROM emisores WHERE identificacion_fiscal = $1', [identificacionFiscal]);
+        if (userExist.rows.length > 0) {
+            return res.status(400).json({ error: 'La identificacion fiscal ya está registrado.' });
         }
 
         // Encriptar contraseña

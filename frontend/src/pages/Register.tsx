@@ -4,12 +4,14 @@ import { registerUser } from '../services/authService';
 import { Link } from 'react-router-dom';
 import type { RegisterCredentials, User } from '../types/auth';
 import InputField from '../components/inputField';
+import { useNotification } from '../context/NotificationContext';
 
 interface RegisterProps {
   onRegisterSuccess?: (user: User) => void;
 }
 
 export default function Register({ onRegisterSuccess }: RegisterProps) {
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState<RegisterCredentials>({
     nombre: '',
     email: '',
@@ -37,8 +39,12 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
       const data = await registerUser(formData);
       setLoading(false);
 
-      if (onRegisterSuccess) {
-        onRegisterSuccess(data.user);
+      showNotification(data.message, 'success');
+
+      if (onRegisterSuccess && data.user) {
+        setTimeout(() => {
+          onRegisterSuccess(data.user);
+        }, 1500);
       }
     } catch (err: any) {
       setLoading(false);

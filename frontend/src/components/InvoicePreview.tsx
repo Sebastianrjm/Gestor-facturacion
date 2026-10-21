@@ -57,6 +57,13 @@ export default function InvoicePreview({
 
   const templateClass = `template-${(plantillaId || 'moderno').toLowerCase()}`;
 
+  const getInitials = () => {
+    const firstN = formData.nombreUsuario ? formData.nombreUsuario.trim().charAt(0) : '';
+    const firstA = formData.apellidoUsuario ? formData.apellidoUsuario.trim().charAt(0) : '';
+    const initials = `${firstN}${firstA}`.toUpperCase();
+    return initials || 'US';
+  };
+
   return (
     <div className={`invoice-sheet ${templateClass}`}>
       {/* Cabecera del Documento */}
@@ -99,7 +106,7 @@ export default function InvoicePreview({
             {profileImage ? (
               <img src={profileImage} alt="Perfil Emisor" />
             ) : (
-              <span className="invoice-avatar-initials">SR</span>
+              <span className="invoice-avatar-initials">{getInitials()}</span>
             )}
           </div>
         </div>
@@ -168,7 +175,7 @@ export default function InvoicePreview({
       </div>
 
       {formData.notas && (
-        <div className="invoice-notes-section">
+        <div className="invoice-notes-section mg-b100">
           <span className="invoice-notes-label">Notas / Condiciones:</span>
           <p className="invoice-notes-text">{formData.notas}</p>
         </div>

@@ -3,6 +3,7 @@ import InputField from '../components/inputField';
 import { Button } from '../components/Button';
 import '../App.css';
 import API from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 interface ProfileFormData {
   nombres: string;
@@ -19,6 +20,7 @@ interface ProfileFormData {
 }
 
 export default function MyProfile() {
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState<ProfileFormData>({
     nombres: '',
     apellidos: '',
@@ -61,8 +63,9 @@ export default function MyProfile() {
             setprofileImage(emisor.logo_url);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error al cargar datos del perfil:', error);
+        showNotification(error.message, "error")
       }
     };
 
@@ -113,12 +116,11 @@ export default function MyProfile() {
         dataToSend.append('logo', selectedFile);
       }
 
-      // Usamos API.put (la cookie viaja sola gracias a withCredentials)
       const response = await API.put('/auth/actualizar-perfil', dataToSend);
       const result = response.data;
 
       if (result.status === 'SUCCESS') {
-        alert('Perfil actualizado correctamente.');
+        showNotification(result.message, "success")
         if (result.data && result.data.logoUrl) {
           setprofileImage(result.data.logoUrl);
         }
@@ -129,7 +131,7 @@ export default function MyProfile() {
     } catch (error: any) {
       console.error('Error al guardar el perfil:', error);
       const mensajeError = error.response?.data?.message || 'Error al conectar con el servidor.';
-      alert(mensajeError);
+      showNotification(error.message, "error")
     }
   };
 
@@ -158,7 +160,7 @@ export default function MyProfile() {
       const result = response.data;
 
       if (result.status === 'SUCCESS') {
-        alert('Contraseña actualizada correctamente.');
+        showNotification("Contraseña actualizada correctamente.", "success")
         // Limpiamos los campos de contraseñas por seguridad
         setFormData(prev => ({
           ...prev,
