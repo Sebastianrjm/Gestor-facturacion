@@ -1,0 +1,23 @@
+/* --- Contenedor principal de los paneles de perfil --- */
+.user-profile-separator {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 24px;
+}
+
+.user-profile-panel {
+  width: 49%;
+  height: fit-content;
+}
+
+/* --- Adaptación Responsive (Móviles y Tablets) --- */
+@media (max-width: 1024px) {
+  .user-profile-separator {
+    flex-direction: column !important; /* Apila los paneles verticalmente */
+  }
+
+  .user-profile-panel {
+    width: 100% !important; /* Hacen que cada panel ocupe el 100% del ancho */
+  }
+}

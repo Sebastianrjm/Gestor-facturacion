@@ -1,0 +1,68 @@
+/* --- Estructura base de la tarjeta --- */
+.invoice-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #FAFAFA;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.invoice-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.invoice-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.invoice-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.invoice-select-wrapper {
+  width: 160px;
+}
+
+.invoice-amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+/* --- Adaptación Responsive (Móviles / Tablets pequeñas) --- */
+@media (max-width: 768px) {
+  .invoice-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .invoice-card-actions {
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 12px;
+    border-top: 1px solid #E2E8F0;
+    gap: 12px;
+  }
+
+  .invoice-select-wrapper {
+    flex: 1;
+    max-width: 180px;
+  }
+}

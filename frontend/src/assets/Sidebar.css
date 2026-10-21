@@ -26,3 +26,52 @@
   font-weight: 500;
   border-radius: 8px;
 }
+
+.mobile-header {
+  display: none;
+}
+
+/* Comportamiento adaptable para pantallas menores a 768px (Móviles / Tablets) */
+@media (max-width: 768px) {
+  /* Mostrar la barra superior con el botón hamburguesa y el logo */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 16px;
+    z-index: 90;
+    box-sizing: border-box;
+  }
+
+  /* Cambiar el contenedor principal a columna */
+  div[style*="display: flex"][style*="width: 100vw"] {
+    flex-direction: column !important;
+  }
+
+  /* Ocultar el sidebar lateral fuera de la pantalla por defecto */
+  .sidebar-container {
+    position: fixed !important;
+    top: 0;
+    left: -240px;
+    transition: left 0.3s ease-in-out;
+    z-index: 101;
+  }
+
+  /* Deslizar el sidebar hacia adentro cuando esté abierto */
+  .sidebar-container.open {
+    left: 0 !important;
+  }
+
+  /* Empujar el área principal hacia abajo para que no quede oculta tras la barra superior */
+  .main-area-container {
+    margin-top: 60px;
+    height: calc(100vh - 60px) !important;
+  }
+}

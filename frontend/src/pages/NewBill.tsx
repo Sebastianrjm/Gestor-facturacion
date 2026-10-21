@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import InvoicePreview, {  type ItemDetalle } from '../components/InvoicePreview';
 import { saveAndDownloadBill } from '../services/billService';
 import API from '../services/api';
+import '../assets/NewBill.css';
 import { useNotification } from '../context/NotificationContext';
 
 
@@ -294,8 +295,10 @@ export default function NewBill() {
       </div>
 
       <div style={{display: "flex", gap: "12px", flexDirection: "column", marginTop: "24px"}}>
-        <div style={styles.Separator}>
-          <div style={styles.principalPanel1}>
+        <div className="new-bill-separator">
+          
+          {/* Formulario (Panel 1) */}
+          <div style={styles.principalPanel1} className="panel-form">
             <h2 
               style={{ ...styles.h2Separator, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none' }}
               onClick={() => toggleSection('client')}
@@ -459,15 +462,13 @@ export default function NewBill() {
             {openSections.concept && (
               <div style={styles.conceptPanel}>
                 {items.map((item, index) => {
-                  // Cálculo automático del total por fila
                   const totalFila = (item.cantidad || 0) * (item.precioUnitario || 0);
 
                   return (
                     <div key={item.id} style={styles.itemRow}>
-                      {/* Descripción del ítem */}
                       <div style={{ flex: 3, width: "100%" }}>
                         <InputField
-                          label={`Ítem ${index + 1} - Descripción`}
+                          label={`Ítem ${index + 1} Descripción`}
                           type="text"
                           name="descripcion"
                           value={item.descripcion}
@@ -479,7 +480,6 @@ export default function NewBill() {
                         />
                       </div>
 
-                      {/* Cantidad */}
                       <div style={{ flex: 1, width: "100%" }}>
                         <InputField
                           label="Cantidad"
@@ -497,7 +497,6 @@ export default function NewBill() {
                         />
                       </div>
 
-                      {/* Precio Unitario */}
                       <div style={{ flex: 1.5, width: "100%" }}>
                         <InputField
                           label="Precio Unitario"
@@ -517,13 +516,11 @@ export default function NewBill() {
                       </div>
                       
                       <div style={{display: "flex", gap: "12px"}}>
-                        {/* Total calculado de la fila */}
                         <div style={styles.totalRowContainer}>
                           <span style={styles.totalRowLabel}>Monto</span>
                           <span style={styles.totalRowValue}>${totalFila.toFixed(2)}</span>
                         </div>
 
-                        {/* Botón Eliminar fila (se oculta si solo hay 1) */}
                         {items.length > 1 && (
                           <button
                             type="button"
@@ -539,7 +536,6 @@ export default function NewBill() {
                   );
                 })}
 
-                {/* Botón para añadir una nueva fila */}
                 <div style={{ marginTop: '8px' }}>
                   <Button variant="secondaryTiny" onClick={handleAddItem}>
                     + Añadir fila
@@ -570,11 +566,10 @@ export default function NewBill() {
                 </textarea>
               )}
             </div>
-
-            
           </div>
 
-          <div style={styles.principalPanel2}>
+          {/* Vista Previa / Factura (Panel 2 - Aparece primero en móvil gracias a flex-direction: column-reverse) */}
+          <div style={styles.principalPanel2} className="panel-preview">
             <h2 style={styles.h2Separator}>Vista Previa en Vivo</h2>
             <span style={styles.badge}>{plantillaId}</span>
             <InvoicePreview
@@ -590,11 +585,11 @@ export default function NewBill() {
         </div>
 
         <div style={{display: "flex", gap: "12px"}}>
-          <Button variant="primary" onClick={handleSaveAndDownload}>
+          <Button variant="primary" onClick={handleSaveAndDownload} className="button-correction">
             Guardar y descargar PDF
           </Button>
 
-          <Button variant="secondary" variant="secondary" 
+          <Button variant="secondary" className="button-correction"
             onClick={() => navigate('/dashboard')}
           >
             Volver a mis facturas

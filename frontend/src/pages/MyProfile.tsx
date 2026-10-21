@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import '../App.css';
 import API from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import '../assets/MyProfile.css';
 
 interface ProfileFormData {
   nombres: string;
@@ -193,10 +194,10 @@ export default function MyProfile() {
         <p className='text'>Configura los datos del emisor que aparecerán en tus facturas.</p>
       </div>
 
-      <div style={styles.Separator}>
+      <div style={styles.Separator} className="user-profile-separator">
         
         {/* SECCIÓN 01: Identidad del emisor */}
-        <div style={styles.principalPanel}>
+        <div style={styles.principalPanel} className="user-profile-panel">
             <h2 style={styles.h2Separator}>01 &nbsp; Identidad del emisor</h2>
             
             {/* Zona de carga de logo solicitada */}
@@ -330,7 +331,7 @@ export default function MyProfile() {
         </div>
 
         {/* SECCIÓN 02: Cambio de contraseña */}
-        <div style={styles.principalPanel}>
+        <div style={styles.principalPanel} className="user-profile-panel">
           <h2 style={styles.h2Separator}>02 &nbsp; Cambio de contraseña</h2>
           <p style={styles.wd8} className='text'>Introduce tu contraseña actual y confirma la nueva.</p>
           

@@ -1,0 +1,33 @@
+/* --- Contenedor principal de la vista de edición/creación --- */
+.new-bill-separator {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Clases base para los paneles */
+.panel-form {
+  width: 43%;
+}
+
+.panel-preview {
+  width: 54%;
+}
+
+/* --- Adaptación Responsive (Móviles y Tablets < 1024px) --- */
+@media (max-width: 1024px) {
+  .new-bill-separator {
+    flex-direction: column-reverse !important; 
+  }
+
+  .panel-form,
+  .panel-preview {
+    width: 100% !important; 
+    max-height: none !important;
+    position: static !important; /* Desactiva el sticky en móvil para un scroll natural */
+  }
+  .button-correction{
+    font-size: 12px !important;
+  }
+}

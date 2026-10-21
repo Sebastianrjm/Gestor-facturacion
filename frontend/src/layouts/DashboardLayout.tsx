@@ -1,11 +1,13 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import "../assets/Sidebar.css";
 import API from '../services/api';
 
 export default function DashboardLayout() {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -23,12 +25,40 @@ export default function DashboardLayout() {
 
   return (
     <div style={styles.container}>
-      {/* Sidebar */}
-      <aside style={styles.sidebar}>
+      {/* Barra Superior Móvil (Visible solo en pantallas pequeñas) */}
+      <header className="mobile-header">
+        <button 
+          onClick={() => setSidebarOpen(!sidebarOpen)} 
+          style={styles.hamburgerButton}
+          aria-label="Abrir menú"
+        >
+          ☰
+        </button>
+        <div style={styles.mobileBrand}>
+          {/* Marcador de posición para el logo */}
+          <div style={styles.logoPlaceholder}>LOGO</div>
+          <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#172338' }}>Folio.</h2>
+        </div>
+      </header>
+
+      {/* Capa oscura (Overlay) al abrir el menú en móviles */}
+      {sidebarOpen && (
+        <div 
+          style={styles.overlay} 
+          onClick={() => setSidebarOpen(false)} 
+        />
+      )}
+
+      {/* Sidebar (Fijo en desktop, panel deslizante en móvil) */}
+      <aside className={`sidebar-container ${sidebarOpen ? 'open' : ''}`} style={styles.sidebar}>
         <div style={styles.brand}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#172338' }}>Folio.</h2>
+          <div style={styles.logoRow}>
+            {/* Marcador de posición para el logo */}
+            <div style={styles.logoPlaceholder}>LOGO</div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#172338' }}>Folio.</h2>
+          </div>
           {user && (
-            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#748094' }}>
+            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#748094' }}>
               {`${user.nombre || ''} ${user.apellido || ''}`.trim()}
             </p>
           )}
@@ -38,6 +68,7 @@ export default function DashboardLayout() {
           <NavLink 
             to="/dashboard" 
             end
+            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) => 
               `nav-item-link ${isActive ? 'active' : ''}`
             }
@@ -47,6 +78,7 @@ export default function DashboardLayout() {
 
           <NavLink 
             to="/dashboard/perfil"
+            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) => 
               `nav-item-link ${isActive ? 'active' : ''}`
             }
@@ -62,8 +94,8 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      {/* Área Principal con Scroll habilitado y dimensión forzada */}
-      <div style={styles.mainArea}>
+      {/* Área Principal con Scroll habilitado */}
+      <div style={styles.mainArea} className="main-area-container">
         <main style={styles.content}>
           <Outlet />
         </main>
@@ -80,6 +112,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '100vh',
     backgroundColor: '#F4F6FA',
     overflow: 'hidden',
+    position: 'relative',
   },
   sidebar: {
     width: '240px', 
@@ -89,10 +122,28 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     borderRight: '1px solid #e2e8f0', 
     height: '100vh',
+    zIndex: 100,
   },
   brand: {
     padding: '1.5rem',
     borderBottom: '1px solid #f1f5f9',
+  },
+  logoRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  logoPlaceholder: {
+    width: '32px',
+    height: '32px',
+    backgroundColor: '#E2E8F0',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '9px',
+    fontWeight: 'bold',
+    color: '#64748B',
   },
   nav: {
     display: 'flex',
@@ -124,5 +175,27 @@ const styles: Record<string, React.CSSProperties> = {
   content: {
     padding: '2rem',
     minHeight: '100%',
+  },
+  hamburgerButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '24px',
+    cursor: 'pointer',
+    color: '#172338',
+    padding: '4px 8px',
+  },
+  mobileBrand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    zIndex: 99,
   },
 };
