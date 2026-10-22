@@ -66,6 +66,9 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
+        <div style={styles.logoPlaceholder}>
+          <img src="../../public/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
+        </div>
         <h1 style={styles.title}>Bienvenido de nuevo</h1>
         <p style={{ ...styles.subtitle, ...styles.text }}>
           Tu facturación, en orden. Accede a tu espacio de trabajo.
@@ -178,5 +181,17 @@ const styles: Record<string, CSSProperties> = {
     color: '#265CF0',
     fontWeight: '600',
     textDecoration: 'none',
+  },
+  logoPlaceholder: {
+    width: '96px',
+    height: '64px',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '9px',
+    fontWeight: 'bold',
+    color: '#64748B',
+    marginBottom: "12px"
   },
 };

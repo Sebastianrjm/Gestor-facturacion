@@ -54,8 +54,13 @@ export default function DashboardLayout() {
         <div style={styles.brand}>
           <div style={styles.logoRow}>
             {/* Marcador de posición para el logo */}
-            <div style={styles.logoPlaceholder}>LOGO</div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#172338' }}>Folio.</h2>
+            <div style={styles.logoPlaceholder}>
+              <img src="../../public/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
+            </div>
+
+
+
+            {/* Aqui va el logo que no lo he hecho */}
           </div>
           {user && (
             <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#748094' }}>
@@ -134,9 +139,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '10px',
   },
   logoPlaceholder: {
-    width: '32px',
-    height: '32px',
-    backgroundColor: '#E2E8F0',
+    width: '96px',
+    height: '64px',
     borderRadius: '6px',
     display: 'flex',
     alignItems: 'center',

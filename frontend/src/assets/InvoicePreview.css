@@ -285,3 +285,17 @@
   background-color: #111827 !important;
   border-radius: 4px !important;
 }
+
+
+
+
+
+
+
+
+@media (max-width: 1024px) {
+  .invoice-image-transmitter{
+    width: 64px;
+    height: 64px;
+  }
+}
