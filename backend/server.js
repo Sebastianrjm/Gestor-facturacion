@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(express.json()); // Parsear JSON en el body de las peticiones
 
 
-const billRoutesRaw = require('./src/routes/src/routes/billRoutes'); // o './src/routes/billRoutes' según tu ruta real
+const billRoutesRaw = require('./src/routes/billRoutes'); // o './src/routes/billRoutes' según tu ruta real
 console.log('--- DEBUG RUTA BILLROUTES ---');
 console.log('Tipo:', typeof billRoutesRaw);
 console.log('Contenido completo:', billRoutesRaw);
