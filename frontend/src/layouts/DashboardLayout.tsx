@@ -20,6 +20,10 @@ export default function DashboardLayout() {
       }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
+    } finally {
+      // Independientemente de si el backend falló o respondió bien,
+      // forzamos la recarga y redirección al login para limpiar todo el cliente
+      window.location.href = '/login';
     }
   };
 
