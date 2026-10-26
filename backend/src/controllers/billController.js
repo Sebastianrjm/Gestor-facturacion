@@ -214,7 +214,7 @@ const getNewBillInitialization = async (req, res) => {
   }
 };
 
-getCurrencies = async (req, res) => {
+const getCurrencies = async (req, res) => {
     try{
         const query = `
         SELECT codigo, nombre, simbolo, activa
