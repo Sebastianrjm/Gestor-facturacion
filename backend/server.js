@@ -23,21 +23,10 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json()); // Parsear JSON en el body de las peticiones
 
-
-const billRoutesRaw = require('./src/routes/billRoutes'); // o './src/routes/billRoutes' según tu ruta real
-console.log('--- DEBUG RUTA BILLROUTES ---');
-console.log('Tipo:', typeof billRoutesRaw);
-console.log('Contenido completo:', billRoutesRaw);
-
-// Si Node recibe un objeto en lugar de función, extraemos la propiedad correcta automáticamente
-const billRoutes = typeof billRoutesRaw === 'function' 
-    ? billRoutesRaw 
-    : (billRoutesRaw.router || billRoutesRaw.default || billRoutesRaw);
-
 // Rutas de la API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/plantillas', templateRoutes);
-app.use('/api/v1/presupuestos', billRoutes);
+//app.use('/api/v1/presupuestos', billRoutes);
 
 
 // Ruta de prueba de estado del servidor
