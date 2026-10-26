@@ -5,6 +5,7 @@ const verifyToken = require('../middlewares/authMiddleware');
 
 // verifyToken sirve para proteger las rutas
 // Rutas fijas
+/*
 router.get('/dashboard', verifyToken, getDashboardData);
 router.get('/nuevo', verifyToken, getNewBillInitialization);
 router.get('/divisas', verifyToken, getCurrencies);
@@ -15,4 +16,7 @@ router.get('/:id', verifyToken, getInvoiceById);
 router.post('/', verifyToken, saveBill);
 router.get('/:id/pdf', verifyToken, generateBillPDF);
 
+*/
+
+console.log("-> billRoutes se cargó correctamente");
 module.exports = router;
