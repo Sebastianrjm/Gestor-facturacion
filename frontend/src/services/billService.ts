@@ -21,9 +21,9 @@ export interface BillPayload {
 }
 
 export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') => {
-  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`, {
+  const response = await fetch(`/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`, {
     method: 'GET',
-    credentials: 'include' // <--- Envía la cookie HttpOnly
+    credentials: 'include'
   });
   const result = await response.json();
   if (result.status !== 'SUCCESS') throw new Error(result.message);
@@ -31,12 +31,12 @@ export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') =
 };
 
 export const updateInvoiceStatus = async (id: string, estado: string) => {
-  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}/estado`, {
+  const response = await fetch(`/api/v1/presupuestos/${id}/estado`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
     },
-    credentials: 'include', // <--- Envía la cookie HttpOnly
+    credentials: 'include',
     body: JSON.stringify({ estado })
   });
   const result = await response.json();
@@ -48,7 +48,7 @@ export const updateInvoiceStatus = async (id: string, estado: string) => {
 
 export const saveAndDownloadBill = async (payload: BillPayload) => {
   // 1. Petición POST para guardar de manera persistente en PostgreSQL
-  const saveResponse = await fetch('http://localhost:5000/api/v1/presupuestos', {
+  const saveResponse = await fetch('/api/v1/presupuestos', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -68,10 +68,10 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
   const apiMessage = saveResult.message;      //  Capturamos el mensaje exacto de la API
 
   // 2. Petición GET inmediata para obtener el PDF binario (Blob) compilado por Puppeteer
-  const pdfResponse = await fetch(`http://localhost:5000/api/v1/presupuestos/${presupuestoId}/pdf`, {
+  const pdfResponse = await fetch(`/api/v1/presupuestos/${presupuestoId}/pdf`, {
     method: 'GET',
     credentials: 'include' 
-  });
+  })
 
   if (!pdfResponse.ok) {
     throw new Error('La factura se guardó correctamente, pero falló la generación del PDF.');
@@ -97,9 +97,9 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
 };
 
 export const getInvoiceById = async (id: string) => {
-  const response = await fetch(`http://localhost:5000/api/v1/presupuestos/${id}`, {
+  const response = await fetch(`/api/v1/presupuestos/${id}`, {
     method: 'GET',
-    credentials: 'include' // <--- Envía la cookie HttpOnly
+    credentials: 'include'
   });
   const result = await response.json();
   if (!response.ok || result.status !== 'SUCCESS') {

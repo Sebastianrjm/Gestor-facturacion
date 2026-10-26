@@ -58,7 +58,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.logoPlaceholder}>
-          <img src="../../public/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
+          <img src="/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
         </div>
         <h1 style={styles.title}>Crear cuenta</h1>
         <p style={{ ...styles.subtitle, ...styles.text }}>

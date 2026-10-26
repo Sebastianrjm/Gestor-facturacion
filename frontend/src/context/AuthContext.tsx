@@ -17,9 +17,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const verifySession = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/auth/perfil', {
+        const response = await fetch('/api/v1/auth/perfil', {
           method: 'GET',
-          credentials: 'include', // Vital para que envíe y reciba la cookie HttpOnly
+          credentials: 'include',
         });
         const result = await response.json();
         
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       // Llamamos al endpoint de logout del backend para que limpie la cookie HttpOnly
-      await fetch('http://localhost:5000/api/v1/auth/logout', {
+      await fetch('/api/v1/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
