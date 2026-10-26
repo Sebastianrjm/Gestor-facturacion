@@ -23,6 +23,12 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json()); // Parsear JSON en el body de las peticiones
 
+
+console.log('--- VERIFICANDO RUTAS ---');
+console.log('authRoutes es:', typeof authRoutes);
+console.log('templateRoutes es:', typeof templateRoutes);
+console.log('billRoutes es:', typeof billRoutes);
+
 // Rutas de la API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/plantillas', templateRoutes);
