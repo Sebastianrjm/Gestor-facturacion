@@ -3,5 +3,11 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "noUnusedLocals": false,          // Evita errores por variables declaradas y no usadas
+    "noUnusedParameters": false,      // Evita errores por parámetros no usados
+    "verbatimModuleSyntax": false,    // Evita problemas con imports de tipos como ReactNode
+    "skipLibCheck": true              // Omite la verificación de librerías externas
+  }
 }

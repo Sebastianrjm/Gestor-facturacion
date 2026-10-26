@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'primaryTiny' | 'secondaryTiny' | 'tertiaryTiny';
   children: React.ReactNode;
 }
 
@@ -33,7 +33,7 @@ export const Button: React.FC<ButtonProps> = ({
     width: "fit-content"
   };
 
-  const variantStyles: Record<'primary' | 'secondary', CSSProperties> = {
+  const variantStyles: Record<'primary' | 'secondary' | 'tertiary' | 'primaryTiny' | 'secondaryTiny' | 'tertiaryTiny', CSSProperties> = {
     primary: {
       backgroundColor: isHovered && !disabled ? '#3b6cf1' : '#265CF0',
       color: '#ffffff',

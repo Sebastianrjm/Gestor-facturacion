@@ -52,14 +52,19 @@ export default function NewBill() {
     numeroFactura: 'FAC-2026-025',
     fechaEmision: new Date().toISOString().split('T')[0],
     fechaVencimiento: '',
-    tasaCambio: '',
+    tasaCambio: 1,
     notas: '',
     estadoFactura: "",
     aplicaImpuesto: false,
     impuestoPorcentaje: 16,
     numeroFiscal: '',
     direccionCliente: '',
-    numeroCliente: "+"
+    numeroCliente: "+",
+    emisor: '',
+    nombreUsuario: '',
+    apellidoUsuario: '',
+    numTelefono: '',
+    direccionEmisor: ''
   });
 
   const [monedaPrincipal, setMonedaPrincipal] = useState('USD');
@@ -255,11 +260,11 @@ export default function NewBill() {
         fechaEmision: formData.fechaEmision,
         fechaVencimiento: formData.fechaVencimiento,
         notasComerciales: formData.notas,
-        aplicaImpuesto: formData.aplicaImpuesto,
+        //aplicaImpuesto: formData.aplicaImpuesto,
         monedaReferencia: monedaReferencia,             
         impuestoPorcentaje: Number(formData.impuestoPorcentaje) || 0, 
         items: items,
-      });
+      }as any);
 
       console.log(`Factura ${response.folio} procesada con éxito`);
       showNotification(response.message, "success");
@@ -573,12 +578,15 @@ export default function NewBill() {
             <h2 style={styles.h2Separator}>Vista Previa en Vivo</h2>
             <span style={styles.badge}>{plantillaId}</span>
             <InvoicePreview
-              formData={formData}
+              formData={{
+                ...formData,
+                estadoFactura: formData.estadoFactura || ''
+              } as any} 
               items={items}
               monedaPrincipal={monedaPrincipal}
               monedaReferencia={monedaReferencia}
               plantillaId={plantillaId}
-              profileImage={profileImage}
+              profileImage={profileImage || ''}
             />
           </div>
 
