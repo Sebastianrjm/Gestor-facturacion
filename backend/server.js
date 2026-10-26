@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middlewares globales
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'https://tu-proyecto.vercel.app'],
     credentials: true, // Vital para las HttpOnly Cookies
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -56,7 +56,10 @@ app.use((req, res) => {
 });
 
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+  });
+}
+
+module.exports = app;
