@@ -7,7 +7,7 @@ require('dotenv').config();
 const db = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const templateRoutes = require('./src/routes/templateRoutes');
-const billRoutes = require('./src/routes/billRoutes');
+//const billRoutes = require('./src/routes/billRoutes');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -24,10 +24,15 @@ app.use(cookieParser());
 app.use(express.json()); // Parsear JSON en el body de las peticiones
 
 
-console.log('--- VERIFICANDO RUTAS ---');
-console.log('authRoutes es:', typeof authRoutes);
-console.log('templateRoutes es:', typeof templateRoutes);
-console.log('billRoutes es:', typeof billRoutes);
+const billRoutesRaw = require('./src/routes/src/routes/billRoutes'); // o './src/routes/billRoutes' según tu ruta real
+console.log('--- DEBUG RUTA BILLROUTES ---');
+console.log('Tipo:', typeof billRoutesRaw);
+console.log('Contenido completo:', billRoutesRaw);
+
+// Si Node recibe un objeto en lugar de función, extraemos la propiedad correcta automáticamente
+const billRoutes = typeof billRoutesRaw === 'function' 
+    ? billRoutesRaw 
+    : (billRoutesRaw.router || billRoutesRaw.default || billRoutesRaw);
 
 // Rutas de la API
 app.use('/api/v1/auth', authRoutes);
