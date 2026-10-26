@@ -7,7 +7,7 @@ require('dotenv').config();
 const db = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const templateRoutes = require('./src/routes/templateRoutes');
-//const billRoutes = require('./src/routes/billRoutes');
+const billRoutes = require('./src/routes/billRoutes');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -26,7 +26,7 @@ app.use(express.json()); // Parsear JSON en el body de las peticiones
 // Rutas de la API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/plantillas', templateRoutes);
-//app.use('/api/v1/presupuestos', billRoutes);
+app.use('/api/v1/presupuestos', billRoutes);
 
 
 // Ruta de prueba de estado del servidor

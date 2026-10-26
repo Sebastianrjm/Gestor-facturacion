@@ -55,7 +55,7 @@ export default function DashboardLayout() {
           <div style={styles.logoRow}>
             {/* Marcador de posición para el logo */}
             <div style={styles.logoPlaceholder}>
-              <img src="../../public/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
+              <img src="/icon.svg" alt="Logo de folio. generador de facturas online"  style={{width: "100%"}}/>
             </div>
 
 
