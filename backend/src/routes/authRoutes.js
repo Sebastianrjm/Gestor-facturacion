@@ -18,7 +18,7 @@ const upload = multer({
             cb(new Error('Formato no soportado. Solo se permiten archivos PNG y SVG.'), false);
         }
     }
-})
+});
 
 // Rutas Públicas
 router.post('/register', register);
