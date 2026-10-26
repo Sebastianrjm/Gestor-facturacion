@@ -1,16 +1,21 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js", 
-      "use": "@vercel/node"
+  "services": {
+    "frontend": {
+      "root": "frontend/"
+    },
+    "backend": {
+      "root": "backend/",
+      "entrypoint": "server.js"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "server.js",
-      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+      "source": "/api/:path*",
+      "destination": { "service": "backend" }
+    },
+    {
+      "source": "/:path*",
+      "destination": { "service": "frontend" }
     }
   ]
 }
