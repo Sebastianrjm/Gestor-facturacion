@@ -1,7 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const handlebars = require('handlebars');
-const puppeteer = require('puppeteer');
 const db = require('../config/db');
 
 const getDashboardData = async (req, res) => {
@@ -404,6 +403,10 @@ const saveBill = async (req, res) => {
 
 const generateBillPDF = async (req, res) => {
     try {
+        // Puppeter no va a funcionar en vercel
+        const puppeteer = require('puppeteer');
+
+
         const { id } = req.params;
         const userId = req.user.userId || req.user.id;
 
