@@ -8,7 +8,7 @@ const multer = require('multer');
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 1024 * 1024 * 2 // Límite de 2MB
+        fileSize: 2 * 1024 * 1024 // <-- 2MB limpios y sin símbolos raros
     },
     fileFilter: (req, file, cb) => {
         // Validar que solo sean imágenes PNG o SVG
