@@ -1,7 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const handlebars = require('handlebars');
-const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 const db = require('../config/db');
 
@@ -405,6 +404,8 @@ const saveBill = async (req, res) => {
 
 const generateBillPDF = async (req, res) => {
     try {
+        const chromium = (await import('@sparticuz/chromium')).default;
+
         const { id } = req.params;
         const userId = req.user.userId || req.user.id;
 
