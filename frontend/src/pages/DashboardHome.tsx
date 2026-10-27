@@ -228,6 +228,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: "24px",
+    marginBottom: "100px"
   },
   topHeader: {
     display: "flex",
