@@ -56,8 +56,8 @@ const register = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.node_env === 'production', // true en producción (HTTPS), false en local
-            sameSite: process.node_env === 'production' ? 'none' : 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 3600000
         });
 
@@ -107,9 +107,9 @@ const login = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.node_env === 'production', // true en producción (HTTPS), false en local
-            sameSite: process.node_env === 'production' ? 'none' : 'lax',
-            maxAge: 3600000 
+            secure: true,
+            sameSite: 'none',
+            maxAge: 3600000
         });
 
         return res.json({
@@ -129,8 +129,8 @@ const logout = async (req, res) => {
         // indicando que su fecha de expiración es inmediata (new Date(0))
         res.cookie('token', '', {
             httpOnly: true,
-            secure: false, // Debe coincidir con la configuración que usaste en el login
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             expires: new Date(0) // Expira al instante
         });
 
