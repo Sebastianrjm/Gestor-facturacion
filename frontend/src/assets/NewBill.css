@@ -18,7 +18,8 @@
 /* --- Adaptación Responsive (Móviles y Tablets < 1024px) --- */
 @media (max-width: 1024px) {
   .new-bill-separator {
-    flex-direction: column-reverse !important; 
+    flex-direction: column-reverse !important;
+    gap: 16px;
   }
 
   .panel-form,
@@ -26,8 +27,18 @@
     width: 100% !important; 
     max-height: none !important;
     position: static !important; /* Desactiva el sticky en móvil para un scroll natural */
+    padding: 24px 12px !important;
   }
   .button-correction{
     font-size: 12px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .invoice-info-text{
+    font-size: 12px !important;
+  }
+  .invoice-info-section strong {
+    font-size: 14px !important;
   }
 }
