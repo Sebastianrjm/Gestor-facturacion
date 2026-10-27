@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middlewares globales
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://gestor-facturacion-seven.vercel.app'],
+    origin: ['http://localhost:5173', 'https://gestor-facturacion-seven.vercel.app', 'https://folio-gefa.vercel.app'],
     credentials: true, // Vital para las HttpOnly Cookies
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

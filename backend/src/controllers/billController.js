@@ -462,8 +462,6 @@ const generateBillPDF = async (req, res) => {
         const initials = `${firstN}${firstA}`.toUpperCase();
 
         // 5. Leer estilos CSS y plantilla Handlebars
-        // ⚠️ ADVERTENCIA: Como tu backend y frontend son proyectos separados en Vercel, 
-        // asegúrate de mover 'InvoicePreview.css' dentro de la carpeta del backend (ej: src/templates/)
         const cssPath = path.join(__dirname, '../templates/InvoicePreview.css');
         const customCss = fs.readFileSync(cssPath, 'utf8');
 
@@ -500,7 +498,7 @@ const generateBillPDF = async (req, res) => {
             iniciales: initials
         });
 
-        // 7. Renderizar con Puppeteer optimizado para Serverless (Vercel)
+        
         const browser = await puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
