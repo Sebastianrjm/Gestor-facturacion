@@ -35,8 +35,9 @@ export default function DashboardLayout() {
         </button>
         <div style={styles.mobileBrand}>
           {/* Marcador de posición para el logo */}
-          <div style={styles.logoPlaceholder}>LOGO</div>
-          <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#172338' }}>Folio.</h2>
+          <div style={styles.logoPlaceholder}>
+            <img src="/icon.svg" alt="Logo de folio. generador de facturas online"/>
+          </div>
         </div>
       </header>
 
