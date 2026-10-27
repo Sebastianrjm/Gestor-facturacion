@@ -594,10 +594,10 @@ export default function NewBill() {
 
         <div style={{display: "flex", gap: "12px"}}>
           <Button variant="primary" onClick={handleSaveAndDownload} className="button-correction">
-            Guardar y descargar PDF
+            Descargar PDF
           </Button>
 
-          <Button variant="secondary" className="button-correction"
+          <Button variant="tertiaryTiny" className="button-correction"
             onClick={() => navigate('/dashboard')}
           >
             Volver a mis facturas
