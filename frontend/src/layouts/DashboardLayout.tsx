@@ -19,8 +19,6 @@ export default function DashboardLayout() {
       }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-    } finally {
-      window.location.href = '/login';
     }
   };
 
