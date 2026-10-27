@@ -8,21 +8,18 @@ import API from '../services/api';
 export default function DashboardLayout() {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       const response = await API.post('/auth/logout');
       
       if (response.data.status === 'SUCCESS') {
-        // Limpia cualquier estado local de usuario que tengas en React (ej: setUser(null))
-        // y redirige al usuario al login
-        window.location.href = '/login'; 
+         navigate('/login') 
       }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     } finally {
-      // Independientemente de si el backend falló o respondió bien,
-      // forzamos la recarga y redirección al login para limpiar todo el cliente
       window.location.href = '/login';
     }
   };
