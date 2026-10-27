@@ -66,7 +66,7 @@ export default function TemplateSidebar({ open, onClose, onSelectTemplate }: Tem
                 height="140"
                 image={item.preview_image_url}
                 alt={item.nombre}
-                style={{borderRadius:"4px"}}
+                style={{borderRadius:"4px", border: "1px solid"}}
               />
               <CardContent style={styles.textStyles}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} className='title'>
