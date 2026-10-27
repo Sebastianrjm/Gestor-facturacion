@@ -388,7 +388,8 @@ const styles: Record<string, React.CSSProperties> = {
   Separator: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: "12px"
+    marginTop: "12px",
+    marginBottom: "100px"
   },
   principalPanel: {
     display: "flex",
