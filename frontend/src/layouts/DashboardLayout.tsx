@@ -92,7 +92,7 @@ export default function DashboardLayout() {
           </NavLink>
         </nav>
 
-        <div style={styles.logoutContainer}>
+        <div style={styles.logoutContainer} className='logoutContainercss'>
           <button onClick={handleLogout} style={styles.logoutButton}>
             Cerrar Sesión
           </button>

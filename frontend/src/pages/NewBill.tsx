@@ -592,7 +592,7 @@ export default function NewBill() {
 
         </div>
 
-        <div style={{display: "flex", gap: "12px"}}>
+        <div style={{display: "flex", gap: "12px", marginBottom: "100px"}}>
           <Button variant="primary" onClick={handleSaveAndDownload} className="button-correction">
             Descargar PDF
           </Button>

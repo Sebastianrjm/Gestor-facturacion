@@ -74,4 +74,9 @@
     margin-top: 60px;
     height: calc(100vh - 60px) !important;
   }
+
+  .logoutContainercss {
+    position: relative;
+    bottom: 40px;
+  }
 }
