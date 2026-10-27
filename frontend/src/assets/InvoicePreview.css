@@ -299,3 +299,9 @@
     height: 64px;
   }
 }
+
+@media (max-width: 479px) {
+  .invoice-sheet{
+    padding: 24px 12px;
+  }
+}
