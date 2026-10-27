@@ -261,6 +261,10 @@
   white-space: pre-wrap;
 }
 
+.invoice-avatar-initials{
+  color: #fff;
+}
+
 /* =========================================
    2. Estilos Dinámicos por ID de Plantilla
    ========================================= */
