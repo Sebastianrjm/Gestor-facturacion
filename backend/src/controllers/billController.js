@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const handlebars = require('handlebars');
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 const db = require('../config/db');
 
 const getDashboardData = async (req, res) => {
@@ -403,10 +405,6 @@ const saveBill = async (req, res) => {
 
 const generateBillPDF = async (req, res) => {
     try {
-        // Puppeter no va a funcionar en vercel
-        const puppeteer = require('puppeteer');
-
-
         const { id } = req.params;
         const userId = req.user.userId || req.user.id;
 
@@ -417,7 +415,7 @@ const generateBillPDF = async (req, res) => {
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // 2. Obtener cabecera asegurando estrictamente que pertenezca al emisor_id del usuario
+        // 2. Obtener cabecera asegurando estrictamente que pertenezca al emisor_id
         const presupuestoQuery = `
             SELECT p.*, e.razon_social AS emisor_nombre, e.identificacion_fiscal AS emisor_rif, 
                    e.telefono AS emisor_telefono, e.email AS emisor_email, e.direccion AS emisor_direccion, e.logo_url,
@@ -459,13 +457,14 @@ const generateBillPDF = async (req, res) => {
         const tasaNumerica = Number(factura.tasa_cambio_aplicada) || 0;
         const totalReferencial = tasaNumerica > 0 ? totalNum * tasaNumerica : 0;
 
-        // Iniciales
-        const firstN = factura.nombre_usuario.trim().charAt(0);
-        const firstA = factura.apellido_usuario.trim().charAt(0);
+        const firstN = factura.nombre_usuario ? factura.nombre_usuario.trim().charAt(0) : 'U';
+        const firstA = factura.apellido_usuario ? factura.apellido_usuario.trim().charAt(0) : '';
         const initials = `${firstN}${firstA}`.toUpperCase();
 
         // 5. Leer estilos CSS y plantilla Handlebars
-        const cssPath = path.join(__dirname, '../../../frontend/src/assets/InvoicePreview.css');
+        // ⚠️ ADVERTENCIA: Como tu backend y frontend son proyectos separados en Vercel, 
+        // asegúrate de mover 'InvoicePreview.css' dentro de la carpeta del backend (ej: src/templates/)
+        const cssPath = path.join(__dirname, '../templates/InvoicePreview.css');
         const customCss = fs.readFileSync(cssPath, 'utf8');
 
         const templatePath = path.join(__dirname, '../templates/invoiceTemplate.hbs');
@@ -484,7 +483,7 @@ const generateBillPDF = async (req, res) => {
             cliente_telefono: factura.cliente_telefono || '',
             items,
             subtotal: subtotalNum.toFixed(2),
-            monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) : null,
+            monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) / 100 : null, // Ajusta si es necesario
             porcentaje_impuesto: factura.impuesto_porcentaje || 0,
             aplica_impuesto: factura.aplica_impuesto,
             total: totalNum.toFixed(2),
@@ -501,14 +500,18 @@ const generateBillPDF = async (req, res) => {
             iniciales: initials
         });
 
-        // 7. Renderizar con Puppeteer
-        const browser = await puppeteer.launch({ 
-            headless: true, 
-            args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+        // 7. Renderizar con Puppeteer optimizado para Serverless (Vercel)
+        const browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true,
         });
+
         const page = await browser.newPage();
-        
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
