@@ -23,12 +23,12 @@ export interface BillPayload {
 }
 
 export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') => {
-  const response = await API.get(`/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`);
+  const response = await API.get(`/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`);
   return response.data.data;
 };
 
 export const updateInvoiceStatus = async (id: string, estado: string) => {
-  const response = await API.patch(`/api/v1/presupuestos/${id}/estado`, { estado });
+  const response = await API.patch(`/presupuestos/${id}/estado`, { estado });
   return response.data.data;
 };
 
