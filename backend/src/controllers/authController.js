@@ -240,6 +240,9 @@ const updateProfile = async (req, res) => {
       );
     }
 
+    console.log("BODY RECIBIDO:", req.body);
+    console.log("FILE RECIBIDO:", req.file);
+
     // 3. Actualizar los datos personales en la tabla usuarios
     await client.query(
       `UPDATE usuarios 

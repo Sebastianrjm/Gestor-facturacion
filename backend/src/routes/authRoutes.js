@@ -11,11 +11,13 @@ const upload = multer({
         fileSize: 2 * 1024 * 1024 // <-- 2MB limpios y sin símbolos raros
     },
     fileFilter: (req, file, cb) => {
-        // Validar que solo sean imágenes PNG o SVG
-        if (file.mimetype === 'image/png' || file.mimetype === 'image/svg+xml') {
+        console.log("Mimetype recibido del archivo:", file.mimetype); // 👈 Revisa esto en tus logs
+        
+        // Acepta cualquier variante común de png o svg
+        if (file.mimetype.includes('png') || file.mimetype.includes('svg') || file.mimetype.includes('image/')) {
             cb(null, true);
         } else {
-            cb(new Error('Formato no soportado. Solo se permiten archivos PNG y SVG.'), false);
+            cb(new Error(`Formato no soportado: ${file.mimetype}`), false);
         }
     }
 });
