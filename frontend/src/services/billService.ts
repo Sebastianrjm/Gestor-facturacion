@@ -1,3 +1,5 @@
+import API from "./api";
+
 export interface BillPayload {
   clienteNombre: string;
   clienteCorreo: string;
@@ -21,64 +23,31 @@ export interface BillPayload {
 }
 
 export const getDashboardData = async (page = 1, limit = 10, status = 'TODOS') => {
-  const response = await fetch(`/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`, {
-    method: 'GET',
-    credentials: 'include'
-  });
-  const result = await response.json();
-  if (result.status !== 'SUCCESS') throw new Error(result.message);
-  return result.data; 
+  const response = await API.get(`/api/v1/presupuestos/dashboard?page=${page}&limit=${limit}&status=${status}`);
+  return response.data.data;
 };
 
 export const updateInvoiceStatus = async (id: string, estado: string) => {
-  const response = await fetch(`/api/v1/presupuestos/${id}/estado`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify({ estado })
-  });
-  const result = await response.json();
-  if (!response.ok || result.status !== 'SUCCESS') {
-    throw new Error(result.message || 'Error al actualizar estado');
-  }
-  return result.data; // Retorna { updatedInvoice, metrics }
+  const response = await API.patch(`/api/v1/presupuestos/${id}/estado`, { estado });
+  return response.data.data;
 };
 
 export const saveAndDownloadBill = async (payload: BillPayload) => {
   // 1. Petición POST para guardar de manera persistente en PostgreSQL
-  const saveResponse = await fetch('/api/v1/presupuestos', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify(payload)
-  });
-
-  const saveResult = await saveResponse.json();
-  
-  if (!saveResponse.ok || saveResult.status !== 'SUCCESS') {
-    throw new Error(saveResult.message || 'Error al guardar la factura');
-  }
+  const saveResponse = await API.post('/presupuestos', payload);
+  const saveResult = saveResponse.data;
 
   const presupuestoId = saveResult.data.id;   // UUID interno de la base de datos
   const folioFactura = saveResult.data.folio; // Ej: FAC-2026-025
-  const apiMessage = saveResult.message;      //  Capturamos el mensaje exacto de la API
+  const apiMessage = saveResult.message;      // Capturamos el mensaje exacto de la API
 
   // 2. Petición GET inmediata para obtener el PDF binario (Blob) compilado por Puppeteer
-  const pdfResponse = await fetch(`/api/v1/presupuestos/${presupuestoId}/pdf`, {
-    method: 'GET',
-    credentials: 'include' 
-  })
-
-  if (!pdfResponse.ok) {
-    throw new Error('La factura se guardó correctamente, pero falló la generación del PDF.');
-  }
+  const pdfResponse = await API.get(`/presupuestos/${presupuestoId}/pdf`, {
+    responseType: 'blob', // Importante para que Axios maneje archivos binarios correctamente
+  });
 
   // 3. Convertir la respuesta en Blob y forzar la descarga en el navegador
-  const blob = await pdfResponse.blob();
+  const blob = new Blob([pdfResponse.data]);
   const url = window.URL.createObjectURL(blob);
   
   const link = document.createElement('a');
@@ -97,13 +66,6 @@ export const saveAndDownloadBill = async (payload: BillPayload) => {
 };
 
 export const getInvoiceById = async (id: string) => {
-  const response = await fetch(`/api/v1/presupuestos/${id}`, {
-    method: 'GET',
-    credentials: 'include'
-  });
-  const result = await response.json();
-  if (!response.ok || result.status !== 'SUCCESS') {
-    throw new Error(result.message || 'Error al obtener los detalles de la factura');
-  }
-  return result.data; // Retorna { invoice, items }
+  const response = await API.get(`/presupuestos/${id}`);
+  return response.data.data; // Retorna { invoice, items }
 };
