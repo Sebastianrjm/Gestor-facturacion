@@ -17,6 +17,9 @@ export default function App() {
       <NotificationProvider>
         <BrowserRouter>
           <Routes>
+            {/* Redirige la ruta raíz / directamente al login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
@@ -39,6 +42,7 @@ export default function App() {
               </Route>
             </Route>
 
+            {/* Captura cualquier otra ruta y muestra el 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
