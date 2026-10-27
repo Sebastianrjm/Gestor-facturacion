@@ -1,7 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const handlebars = require('handlebars');
-const puppeteer = require('puppeteer-core');
 const db = require('../config/db');
 
 const getDashboardData = async (req, res) => {
@@ -404,19 +403,21 @@ const saveBill = async (req, res) => {
 
 const generateBillPDF = async (req, res) => {
     try {
+        // 1. Importación dinámica OBLIGATORIA para evitar el error ERR_REQUIRE_ESM
+        const puppeteer = (await import('puppeteer-core')).default;
         const chromium = (await import('@sparticuz/chromium')).default;
 
         const { id } = req.params;
         const userId = req.user.userId || req.user.id;
 
-        // 1. Obtener el emisor_id del usuario logueado para validar propiedad
+        // 2. Obtener el emisor_id del usuario logueado para validar propiedad
         const userRes = await db.query('SELECT emisor_id FROM usuarios WHERE id = $1', [userId]);
         if (userRes.rows.length === 0) {
             return res.status(404).json({ status: 'ERROR', message: 'Usuario no encontrado' });
         }
         const emisorId = userRes.rows[0].emisor_id;
 
-        // 2. Obtener cabecera asegurando estrictamente que pertenezca al emisor_id
+        // 3. Obtener cabecera asegurando estrictamente que pertenezca al emisor_id
         const presupuestoQuery = `
             SELECT p.*, e.razon_social AS emisor_nombre, e.identificacion_fiscal AS emisor_rif, 
                    e.telefono AS emisor_telefono, e.email AS emisor_email, e.direccion AS emisor_direccion, e.logo_url,
@@ -437,7 +438,7 @@ const generateBillPDF = async (req, res) => {
 
         const factura = presupuestoRes.rows[0];
 
-        // 3. Obtener los ítems de la factura
+        // 4. Obtener los ítems de la factura
         const detallesQuery = `
             SELECT descripcion, cantidad, precio_unitario, subtotal_linea 
             FROM presupuesto_detalles 
@@ -451,7 +452,7 @@ const generateBillPDF = async (req, res) => {
             subtotal_linea: Number(item.subtotal_linea).toFixed(2)
         }));
 
-        // 4. Cálculos de montos y tasa referencial
+        // 5. Cálculos de montos y tasa referencial
         const subtotalNum = Number(factura.subtotal) || 0;
         const totalNum = Number(factura.total) || 0;
         const montoImpuestoNum = Number(factura.monto_impuesto) || 0;
@@ -462,7 +463,7 @@ const generateBillPDF = async (req, res) => {
         const firstA = factura.apellido_usuario ? factura.apellido_usuario.trim().charAt(0) : '';
         const initials = `${firstN}${firstA}`.toUpperCase();
 
-        // 5. Leer estilos CSS y plantilla Handlebars
+        // 6. Leer estilos CSS y plantilla Handlebars
         const cssPath = path.join(__dirname, '../templates/InvoicePreview.css');
         const customCss = fs.readFileSync(cssPath, 'utf8');
 
@@ -470,7 +471,7 @@ const generateBillPDF = async (req, res) => {
         const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
         const compiledTemplate = handlebars.compile(htmlTemplate);
 
-        // 6. Inyectar datos preparados
+        // 7. Inyectar datos preparados
         const htmlContent = compiledTemplate({
             ...factura,
             emisor_nombre: factura.emisor_nombre || 'Emisor',
@@ -482,7 +483,7 @@ const generateBillPDF = async (req, res) => {
             cliente_telefono: factura.cliente_telefono || '',
             items,
             subtotal: subtotalNum.toFixed(2),
-            monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) / 100 : null, // Ajusta si es necesario
+            monto_impuesto: montoImpuestoNum > 0 ? montoImpuestoNum.toFixed(2) / 100 : null,
             porcentaje_impuesto: factura.impuesto_porcentaje || 0,
             aplica_impuesto: factura.aplica_impuesto,
             total: totalNum.toFixed(2),
@@ -499,7 +500,7 @@ const generateBillPDF = async (req, res) => {
             iniciales: initials
         });
 
-        
+        // 8. Lanzar Puppeteer con Chromium optimizado para Serverless
         const browser = await puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
