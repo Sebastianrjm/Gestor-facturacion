@@ -217,7 +217,7 @@ export default function MyProfile() {
                         Logo de la empresa
                     </label>
                     <p className='text' style={{color: "#748094", fontSize: '12px', margin: 0}}>
-                        Se admiten archivos png, jpg más livianos de 1 mega
+                        Se admiten archivos png y svg más livianos de 1 mega
                     </p>
                     
                     <input 

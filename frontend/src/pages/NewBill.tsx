@@ -383,7 +383,6 @@ export default function NewBill() {
                   value={formData.fechaVencimiento}
                   onChange={handleChange}
                   placeholder="2026-10-09"
-                  required
                 />
               </div>
             )}

@@ -354,7 +354,7 @@ const saveBill = async (req, res) => {
             totalCalculado, 
             plantillaId, 
             fechaEmision, 
-            fechaVencimiento, 
+            fechaVencimiento && fechaVencimiento.trim() !== '' ? fechaVencimiento : null,
             notasComerciales,
             aplicaImp, 
             porcImp, 
